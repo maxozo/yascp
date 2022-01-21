@@ -16,13 +16,13 @@ if (binding.hasVariable("echo_mode") == false) {
 process cellbender__rb__get_input_cells {
 
   label 'process_low'
-  
+
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
     container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_cellbender_v1.2.img"
     maxRetries = 1
     // workdir /tmp
 
-    
+
   } else {
     container "quay.io/biocontainers/multiqc:1.10.1--py_0"
   }
@@ -107,7 +107,7 @@ process cellbender__remove_background {
   //cache false    // cache results from run
   //maxForks 2   // hard to control memory usage. limit to 3 concurrent
 
-  
+
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
     container "/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/singularity_images/nf_cellbender_v1.2.img"
     maxRetries = 1
@@ -126,7 +126,7 @@ process cellbender__remove_background {
     label 'process_high'
     gpu_text_info = ''
   }
-  
+
   scratch false    // use tmp directory
   echo echo_mode   // echo output from script
 
@@ -218,10 +218,10 @@ process cellbender__remove_background {
 
     //     // use GPU
     if (params.utilise_gpu){
-    
+
     gpu_text_info = '--cuda'
     }else{
-     
+
     gpu_text_info = ''
     }
     runid = random_hex(16)
@@ -245,7 +245,7 @@ process cellbender__remove_background {
     process_info = "${process_info}, ${task.cpus} (cpus)"
     process_info = "${process_info}, ${task.memory} (memory)"
     """
-
+    export NUMBA_CACHE_DIR=/tmp
     rm -fr plots
     mkdir txd_input
     ln --physical ${file_10x_barcodes} txd_input/barcodes.tsv.gz
@@ -367,13 +367,13 @@ process cellbender__remove_background__qc_plots_2 {
   // This task compare the cellbender output with both the cellranger filtered and cellragner raw outputs
   // ------------------------------------------------------------------------
   tag { "$experiment_id" }
-  publishDir "${outdir2}/$experiment_id/compare_cellranger/", pattern: "fpr_${fpr}/${experiment_id}/*.png", 
+  publishDir "${outdir2}/$experiment_id/compare_cellranger/", pattern: "fpr_${fpr}/${experiment_id}/*.png",
     saveAs: {filename ->
     filename.replaceAll("fpr_${fpr}/${experiment_id}/", "fpr_${fpr}/")
   },
     mode: "${params.cellsnp.copy_mode}",
     overwrite: "true"
-  
+
   //cache false    // cache results from run
   //maxForks 2   // hard to control memory usage. limit to 3 concurrent
   scratch false    // use tmp directory
@@ -383,7 +383,7 @@ process cellbender__remove_background__qc_plots_2 {
     val(outdir2)
   output:
     val(outdir, emit: outdir)
-    path("fpr_${fpr}/${experiment_id}/*.png"), emit: plots_png 
+    path("fpr_${fpr}/${experiment_id}/*.png"), emit: plots_png
 
   script:
   """

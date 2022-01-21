@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 // main deconvolution modules, common to all input modes:
 
 include { CELLSNP } from "$projectDir/modules/nf-core/modules/cellsnp/main"
-include { SUBSET_GENOTYPE } from '../modules/nf-core/modules/subset_genotype/main'
+include { SUBSET_GENOTYPE; SUBSET_GENOTYPE_SWAP_DONOR_ID } from '../modules/nf-core/modules/subset_genotype/main'
 include { VIREO } from '../modules/nf-core/modules/vireo/main'
 include { GUZIP_VCF } from '../modules/nf-core/modules/guzip_vcf/main'
 include { SOUPORCELL } from '../modules/nf-core/modules/souporcell/main'
@@ -19,7 +19,9 @@ workflow  main_deconvolution {
 		ch_experiment_npooled
 		ch_experiment_filth5
 		ch_experiment_donorsvcf_donorslist
-        channel__file_paths_10x
+    ch_donorid_swap_table
+    ch_vcf_dir
+    channel__file_paths_10x
 
     main:
 		log.info "#### running workflow main_deconvolution() ..."
@@ -28,19 +30,27 @@ workflow  main_deconvolution {
         if (params.run_with_genotype_input) {
             if (params.genotype_input.subset_genotypes){
                 log.info "---We are subsetting genotypes----"
-
-                SUBSET_GENOTYPE(ch_experiment_donorsvcf_donorslist.map { experiment, donorsvcf, donorslist -> tuple(experiment,
-                                file(donorsvcf),
-                                donorslist)})
+                ch_experiment_donorsvcf_donorslist
+                .map {
+                  experiment, donorsvcf, donorslist -> tuple(
+                  experiment, file(donorsvcf), donorslist
+                  )
+                }
+                .set { ch_exp_vcf_donors }
+                if (params.genotype_input.swap_donor_ids) {
+                  SUBSET_GENOTYPE_SWAP_DONOR_ID(ch_exp_vcf_donors, ch_vcf_dir, ch_donorid_swap_table)
+                } else {
+                  SUBSET_GENOTYPE(ch_exp_vcf_donors)
+                }
             }
 
         }
 
         ch_experiment_donorsvcf_donorslist.map { experiment, donorsvcf, donorslist -> tuple(experiment, donorslist.replaceAll(/,/, " ").replaceAll(/"/, ""))}.set{donors_in_lane}
-        
+
         CELLSNP(ch_experiment_bam_bai_barcodes,
             Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect())
-        
+
         MULTIPLET(
             params.output_dir,
             channel__file_paths_10x,
@@ -82,7 +92,7 @@ workflow  main_deconvolution {
             // full_vcf.view()
             full_vcf.filter { experiment, cellsnp, npooled, t -> npooled != '1' }.set{full_vcf2}
             full_vcf.filter { experiment, cellsnp, npooled, t -> npooled == '1' }.set{not_deconvoluted}
-            
+
             // full_vcf2.view()
             VIREO(full_vcf2)
             vireo_out_sample_summary_tsv = VIREO.out.sample_summary_tsv
@@ -143,7 +153,7 @@ workflow  main_deconvolution {
             // Now that channel is created run suporcell
             full_vcf.filter { samplename, bam_file, bai_file, barcodes_tsv_gz, souporcell_n_clusters, t1, t2 -> souporcell_n_clusters != '1' }.set{full_vcf2}
             full_vcf.filter { samplename, bam_file, bai_file, barcodes_tsv_gz, souporcell_n_clusters, t1, t2 -> souporcell_n_clusters == '1' }.set{not_deconvoluted}
-            
+
             SOUPORCELL(full_vcf,
                 Channel.fromPath(params.souporcell.reference_fasta).collect())
 
@@ -159,7 +169,7 @@ workflow  main_deconvolution {
                 split_channel2 = not_deconvoluted.combine(ch_experiment_filth5, by: 0)
                 split_channel = split_channel.mix(split_channel2)
                 split_channel = split_channel.combine(scrublet_paths, by: 0)
-                
+
                 // run a multiplet detection and when splitting the donor specific h5ad remove these from non deconvoluted samples
 
                 SPLIT_DONOR_H5AD(split_channel)
@@ -190,7 +200,7 @@ workflow  main_deconvolution {
                         newLine: false, sort: true,
                         seed: "experiment_id\th5ad_filepath\n",
                         storeDir:params.outdir+'/deconvolution/filepaths')
-                
+
                 SPLIT_DONOR_H5AD.out.h5ad_tsv
                 .collectFile(name: "cellranger_as_h5ad.tsv",
                         newLine: true, sort: true, // only one line in each file to collate, without ending new line character, so add it here.
@@ -211,12 +221,12 @@ workflow  main_deconvolution {
                         newLine: false, sort: true,
                         seed: "experiment_id\tn_cells\n",
                         storeDir:params.outdir+'/deconvolution/filepaths')
-                
+
                 vireo_out_sample_summary_tsv.view()
                 vireo_out_sample__exp_summary_tsv.view()
 
                 PLOT_DONOR_CELLS(ch_vireo_donor_n_cells_tsv)
-                
+
 
         }else{
             out_h5ad =Channel.fromPath(params.cellsnp.vcf_candidate_snps).collect()

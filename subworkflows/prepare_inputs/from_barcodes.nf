@@ -48,7 +48,7 @@ workflow from_barcodes {
         row.experiment_id,
         file("${row.data_path_10x_format}/metrics_summary.csv")
     )}
-    
+
     prep_collectmetadata(channel__metadata)
     channel__metadata=merge_metadata(prep_collectmetadata.out.metadata.collect())
 
@@ -82,7 +82,7 @@ workflow from_barcodes {
 
             if (params.genotype_input.subset_genotypes){
                 log.info("----We will subset genotypes----")
-                // in this case we have to be avare that the last col is a IDs but not number of donors pooled as per bellow
+                // in this case we have to be aware that the last col is a IDs but not number of donors pooled as per below
 
                 channel_input_data_table
                 .splitCsv(header: true, sep: params.input_tables_column_delimiter)
@@ -91,7 +91,7 @@ workflow from_barcodes {
 
             }else{
                 log.info('----We are using full VCF for each donor without subsetting----')
-                // in this case we have to be avare that the last number is a number of donors pooled instead of IDs as per above
+                // in this case we have to be aware that the last number is a number of donors pooled instead of IDs as per above
                 channel_input_data_table
                     .splitCsv(header: true, sep: params.input_tables_column_delimiter)
                     .map{row->tuple(row.experiment_id, params.genotype_input.full_vcf_file, row.n_pooled)}
