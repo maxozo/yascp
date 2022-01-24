@@ -53,10 +53,21 @@ process SUBSET_GENOTYPE_SWAP_DONOR_ID {
         echo ${sample_subset_file}
         echo ${samplename}
         echo "${sample_subset_file}" | awk -F"," '{for(i=1;i<=NF;i++) print $i}' > ${samplename}.donorids.txt
-        ##for per_chr_vcf in 
-        #tabix -p vcf ${donor_vcf} || echo 'not typical VCF'
-        #bcftools view ${donor_vcf} -s ${sample_subset_file} -Oz -o ${samplename}.subset.vcf.gz
-        #rm ${donor_vcf}.tbi || echo 'not typical VCF'
+        for chr_vcf in $(ls ${dir_donor_vcf}/*.vcf.gz)
+        do
+          bcftools query --list-samples ${chr_vcf} >> sample_ids_vcf.txt
+        done
+        python ${projectDir}/bin/swap_donor_ids.py ${file_donor_id_conversion} ${sample_subset_file} sample_ids_vcf.txt converted_ids.txt
+        for chr_vcf in $(ls ${dir_donor_vcf}/*.vcf.gz)
+        do
+          oufnprfx=$(basename -s .vcf.gz ${chr_vcf})
+          #tabix -p vcf ${donor_vcf} || echo 'not typical VCF'
+          echo "${samplename}.{oufnprfx}.subset.vcf.gz" >> vcf_files.txt
+          bcftools view ${donor_vcf} -S converted_ids.txt -Oz -o ${samplename}.{oufnprfx}.subset.vcf.gz
+          #rm ${donor_vcf}.tbi || echo 'not typical VCF'
+        done
+        # combine VCFs into one
+        bcftools concat -l vcf_files.txt -Oz -o ${samplename}.{oufnprfx}.vcf.gz
     """
 
 }
