@@ -3,7 +3,7 @@ nextflow.enable.dsl=2
 // main deconvolution modules, common to all input modes:
 
 include { CELLSNP } from "$projectDir/modules/nf-core/modules/cellsnp/main"
-include { SUBSET_GENOTYPE; SUBSET_GENOTYPE_SWAP_DONOR_ID } from '../modules/nf-core/modules/subset_genotype/main'
+include { SUBSET_GENOTYPE; SWAP_DONOR_IDS } from '../modules/nf-core/modules/subset_genotype/main'
 include { VIREO } from '../modules/nf-core/modules/vireo/main'
 include { GUZIP_VCF } from '../modules/nf-core/modules/guzip_vcf/main'
 include { SOUPORCELL } from '../modules/nf-core/modules/souporcell/main'
@@ -20,7 +20,7 @@ workflow  main_deconvolution {
 		ch_experiment_filth5
 		ch_experiment_donorsvcf_donorslist
     ch_donorid_swap_table
-    ch_vcf_dir
+    ch_csv_dir
     channel__file_paths_10x
 
     main:
@@ -37,11 +37,22 @@ workflow  main_deconvolution {
                   )
                 }
                 .set { ch_exp_vcf_donors }
-                if (params.genotype_input.swap_donor_ids) {
-                  SUBSET_GENOTYPE_SWAP_DONOR_ID(ch_exp_vcf_donors, ch_vcf_dir, ch_donorid_swap_table)
-                } else {
-                  SUBSET_GENOTYPE(ch_exp_vcf_donors)
-                }
+              ch_exp_vcf_donors.subscribe onNext: { println "ch_exp_vcf_donors: $it" }, onComplete: { println 'ch_exp_vcf_donors: Done' }
+              //if (0 == params.genotype_input.sample_id_swap_table.length()) {
+              //  DUMP_DONOR_IDS(ch_exp_vcf_donors)
+              //  ch_exp_vcf_donor_ids = DUMP_DONOR_IDS.out
+              //} else {
+              //  SWAP_DONOR_IDS(ch_exp_vcf_donors, params.genotype_input.sample_id_swap_table)
+              //  ch_exp_vcf_donor_ids = SWAP_DONOR_IDS.out
+              //}
+                //if (params.genotype_input.swap_donor_ids) {
+                //if (0 != params.genotype_input.sample_id_swap_table.length())
+                //  SUBSET_GENOTYPE_VCF_DIR(ch_exp_vcf_donor_ids)
+                //} else {
+                //  SUBSET_GENOTYPE_VCF_FILE(ch_exp_vcf_donor_ids)
+                //}
+                SWAP_DONOR_IDS(ch_exp_vcf_donors, ch_donorid_swap_table)
+                SUBSET_GENOTYPE(SWAP_DONOR_IDS.out)
             }
 
         }
