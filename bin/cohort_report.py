@@ -92,30 +92,42 @@ def Generate_Report(GT_MATCH_CONFIDENT,pan):
             SITE = 'NA'
             Amount = 'NA'
             RECIEVED = 'NA'
+            
         try:
             Matched_Donor_report.insert(8, 'lab_live_cell_count',live_cell_count)
         except:
             print('exists')
+            Matched_Donor_report['lab_live_cell_count'] =  live_cell_count
+
         try:
             Matched_Donor_report.insert(8, 'viability', viability)
         except:
             print('exists')
+            Matched_Donor_report['viability'] =  viability
+
         try:
             Matched_Donor_report.insert(8, 'cohort', cohort)
         except:
             print('exists')
+            Matched_Donor_report['cohort'] =  cohort
+
         try:
             Matched_Donor_report.insert(8, 'Match Expected', row1['Match Expected'])
         except:
             print('exists')
+            Matched_Donor_report['Match Expected'] =  row1['Match Expected']
+
         try:
             Matched_Donor_report.insert(8, 'site', SITE)
         except:
             print('exists')
+            Matched_Donor_report['site'] =  SITE
+
         try:
             Matched_Donor_report.insert(8, 'amount recieved', Amount)
         except:
             print('exists')
+            Matched_Donor_report['amount recieved'] =  Amount
 
         Matched_Donor_report['Date sample received'] =  RECIEVED
         Matched_Donor_report['Donor id']=row1['donor_gt original'].split('_')[0]
