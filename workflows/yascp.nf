@@ -68,7 +68,7 @@ workflow SCDECON {
     ch_poolid_csv_donor_assignments = Channel.empty()
     bam_split_channel = Channel.of()
     input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
-            
+
     if(!params.just_reports){
         // sometimes we just want to rerun report generation as a result of alterations, hence if we set params.just_reports =True pipeline will use the results directory and generate a new reports.
         if (!params.skip_preprocessing.value){
@@ -144,7 +144,7 @@ workflow SCDECON {
             CREATE_ARTIFICIAL_BAM_CHANNEL(input_channel)
             bam_split_channel = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_experiment_bam_bai_barcodes
         }
-        
+
 
         // ###################################
         // ################################### Readme
@@ -158,7 +158,7 @@ workflow SCDECON {
             qc(file__anndata_merged,file__cells_filtered) //This runs the Clusterring and qc assessments of the datasets.
             process_finish_check_channel = qc.out.LI
         }else{
-            // if we are not running qc step we need to account for an dummy channel. 
+            // if we are not running qc step we need to account for an dummy channel.
             process_finish_check_channel = Channel.of([1, 'dummy'])
         }
     }else{
@@ -186,19 +186,26 @@ workflow SCDECON {
     //               .set { ch_experiment_bam_vireo_donor_ids }
     // for this we needa channel with:
     // samplename,
-    //  bamfile_for_sample, 
+    //  bamfile_for_sample,
     // vireo_results_for_sample - /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_45596_Aug_22_2022/results/deconvolution/vireo/CRD_CMB13086613/donor_ids.tsv
     // Named as sample_possorted_bam_vireo_donor_ids
 
-    // 
+    //
     //This part gathers the plots for the reporting in a Summary folder. If run through gitlab CI it will triger the data transfer to web.
-    
+
+    process_finish_check_channel
+      .subscribe onNext: {println "process_finish_check_channel: $it"},
+        onComplete: {println "process_finish_check_channel: done"}
+    ch_poolid_csv_donor_assignments
+      .subscribe onNext: {println "ch_poolid_csv_donor_assignments: $it"},
+        onComplete: {println "ch_poolid_csv_donor_assignments: done"}
+    bam_split_channel
+      .subscribe onNext: {println "bam_split_channel: $it"},
+      onComplete: {println "bam_split_channel: done"}
     data_handover(params.output_dir,
                     process_finish_check_channel,
                     ch_poolid_csv_donor_assignments,
-                    bam_split_channel) 
-                    
-                    
+                    bam_split_channel)
 }
 
 /*

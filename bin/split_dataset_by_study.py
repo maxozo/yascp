@@ -131,10 +131,12 @@ def get_file_list_dict(pool_direntry):
             i = 0
         elif fn_ext == 'tsv':
             i = 1
+        elif fn_ext == 'cram':
+            i = 3
         else:
             continue
         if donor_id not in file_lst:
-            file_lst[donor_id] = [None,None]
+            file_lst[donor_id] = [None,None,None]
         file_lst[donor_id][i] = fnam
     return file_lst
 
@@ -199,16 +201,18 @@ def split_dataset(study_dict, dirnam_input, pool_id, dirnam_output):
 if __name__ == '__main__':
     nargs = len(sys.argv)
 
-    if nargs != 4:
+    if nargs < 4 or nargs > 5:
         sys.exit(
-            "usage: {:s} <donor assignment file [tsv]> <input directory> <output_directory>"
+            "usage: {:s} <donor assignment file [tsv]> <input directory> <output_directory> [<CRAM dirs list>]"
             .format(sys.argv[0])
         )
 
     fnam_donor_assignments = sys.argv[1]
     dirnam_input = sys.argv[2]
     dirnam_output = sys.argv[3]
-
+    cram_dirs_input = None
+    if nargs > 4:
+        cram_dirs_input = sys.argv[4]
     os.makedirs(dirnam_output, exist_ok = False)
 
     #study_dict = load_donor_assignments(fnam_donor_assignments)
