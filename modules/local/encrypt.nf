@@ -30,7 +30,7 @@ process ENCRYPT_DIR
 
 process ENCRYPT_TARGET
 {
-  label 'process_tiny'
+  label 'process_long'
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
     container "/software/hgi/containers/wtsihgi-nf_ega_cryptor-1.0.sif"
@@ -51,7 +51,7 @@ process ENCRYPT_TARGET
     path("${outdir}", emit:encrypted_dir)
 
   script:
-  outdir="encryptor_output"
+  outdir="${input_target.baseName}_encryptor_output"
   """
     java -jar /opt/EGA-Cryptor-2.0.0/ega-cryptor-2.0.0.jar -i ${input_target} -o ${outdir}
   """

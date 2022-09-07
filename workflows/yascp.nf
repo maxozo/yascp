@@ -65,7 +65,7 @@ workflow SCDECON {
     // (option 3) users can run it from cellranger - skipping the cellbender. params.input == 'cellranger'
     // ###################################
     // ###################################
-    ch_poolid_csv_donor_assignments = Channel.empty()
+
     bam_split_channel = Channel.of()
     input_channel = Channel.fromPath(params.input_data_table, followLinks: true, checkIfExists: true)
 
@@ -126,6 +126,7 @@ workflow SCDECON {
             }else{
                 channel__metadata = prepare_inputs.out.channel__metadata
                 MERGE_SAMPLES(channel__file_paths_10x,channel__metadata,'barcodes')
+                ch_poolid_csv_donor_assignments = Channel.empty()
             }
             // TODO: Here add a fundtion to take an extra h5ad and merge it together with the current run. This will be required for the downstream analysis when we want to integrate multiple datasets
             file__anndata_merged = MERGE_SAMPLES.out.file__anndata_merged
@@ -144,7 +145,7 @@ workflow SCDECON {
             CREATE_ARTIFICIAL_BAM_CHANNEL(input_channel)
             bam_split_channel = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_experiment_bam_bai_barcodes
             ch_poolid_csv_donor_assignments = CREATE_ARTIFICIAL_BAM_CHANNEL.out.ch_poolid_csv_donor_assignments
-                
+
             // /lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/Cardinal_45673_Aug_28_2022/results/gtmatch/CRD_CMB13098028/CRD_CMB13098028_gt_donor_assignments.csv
         }
 

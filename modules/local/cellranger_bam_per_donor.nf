@@ -18,14 +18,14 @@ process SPLIT_CELL_BARCODES_PER_DONOR
       params.split_bam
 
     script:
-    oufnprfx="${pool_id}_barcodes"
+    oufnprfx="${pool_id}"
     outdir="${pool_id}_bcfiles"
     oufofn="${pool_id}_fofn.txt"
     """
       write_barcode_to_file () {
           barcode=\$1
           donor=\$2
-          echo "\${barcode}" >> ${outdir}/${oufnprfx}_\${donor}.txt
+          echo "\${barcode}" >> ${outdir}/${oufnprfx}.\${donor}.txt
       }
 
       rm -fr ${outdir}
@@ -82,7 +82,7 @@ process SPLIT_BAM_BY_CELL_BARCODES
       echo "vireo_donor_barcode_filnam = ${vireo_donor_barcode_filnam}"
       samtools view --threads ${task.cpus} --tag-file CB:${bcfilpath} \
         --cram -T ${reference_assembly_dir}/genome.fa \
-        -o ${oufnprfx}_possorted_bam.cram ${cellranger_possorted_bam}
+        -o ${oufnprfx}.cram ${cellranger_possorted_bam}
     """
 }
 

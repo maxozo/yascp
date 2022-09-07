@@ -50,7 +50,7 @@ process SPLIT_DATA_BY_STUDY
               mode: "${params.copy_mode}",
               overwrite: "true"
 
-  label 'process_small'
+  label 'process_tiny'
 
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       container "/software/hgi/containers/wtsihgi_nf_scrna_qc_6bb6af5-2021-12-23-3270149cf265.sif"
@@ -74,6 +74,6 @@ process SPLIT_DATA_BY_STUDY
     outdir_ukbb = "handover_study/GT_UKBB"
     """
       echo "${input_dirs_cram}" > ./cram_dirs.lst
-      split_dataset_by_study.py ${donor_assignments_tsv} ${input_dir} ./cram_dirs.lst ../handover_study
+      split_dataset_by_study.py ${donor_assignments_tsv} ${input_dir} ./handover_study ./cram_dirs.lst
     """
 }
