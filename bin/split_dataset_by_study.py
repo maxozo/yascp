@@ -7,6 +7,7 @@ import sys
 import os
 import re
 import csv
+import copy
 
 FOFN_NAME_INPUT = "files.tsv"
 OUTDIR_UNKNOWN = "GT_UNRESOLVED"
@@ -21,9 +22,9 @@ MANIFEST_HEADER = \
     "filename_cram_encrypted\tchecksum_cram_encrypted\tchecksum_cram\n"
 MANIFEST_FMT = \
     "{0[0]:s}\t{0[1]:s}\t{0[2]:s}\t" \
-    "{0[3]:s}\t{0[4]:s}\t{0[5]:s}\t" \
-    "{0[6]:s}\t{0[7]:s}\t{0[8]:s}\t" \
-    "{0[9]:s}\t{0[10]:s}\t{0[11]:s}\n"
+    "{1[0]:s}\t{1[1]:s}\t{1[2]:s}\t" \
+    "{2[0]:s}\t{2[1]:s}\t{2[2]:s}\t" \
+    "{3[0]:s}\t{3[1]:s}\t{3[2]:s}\n"
 
 FNAM_POOL_DONOR_MATCH = re.compile("^(\S+)_barcodes_(\S+)_possorted_bam$")
 
@@ -99,17 +100,16 @@ def read_md5_checksum_unencrypted(fnam):
             .format(fnam, FILE_EXT_ENCRYPTED))
     return read_md5_checksum(filnam_ext[0])
 
-def join_manifests(manifest_pool, manifest_crams):
+def merge_manifest_rows(manifest_pool, manifest_crams):
     manifest = []
     for donor_id in manifest_pool:
-        t1 = manifest_pool[donor_id]
+        manifest_row = copy.deepcopy(manifest_pool[donor_id])
         if manifest_crams:
-            t2 = manifest_crams[donor_id]
-            if t1[:3] != t2[:3]:
-                sys.exit("ERROR: manfest mismatch.")
-            manifest.append(t1 + t2[7:])
-        else:
-            manifest.append(t1)
+            row2 = manifest_crams[donor_id]
+            if manifest_row[:3] != row2[:3]:
+                sys.exit("ERROR: manifest mismatch.")
+            manifest_row[5] = row2[5]
+        manifest.append(manifest_row)
     return manifest
 
 def write_manifest(outdir, tranche_name, manifest_arr, fnam_manifest = FNAM_MANIFEST):
@@ -120,26 +120,26 @@ def write_manifest(outdir, tranche_name, manifest_arr, fnam_manifest = FNAM_MANI
     oufh = open(oufnam, 'w')
     oufh.write(MANIFEST_HEADER)
     ctr = 0
-    for t in manifest_arr:
+    for row in manifest_arr:
         ctr += 1
-        study_dir = t[2]
-        study_symbol = convert_study_dir_to_symbol(study_dir)
-        oufh.write(MANIFEST_FMT.format(t[:2]+(study_symbol,)+t[3:]))
+        study_dir = row[2]
+        row[2] = convert_study_dir_to_symbol(study_dir)
+        print("data_tup", row)
+        oufh.write(MANIFEST_FMT.format(row[:3], row[3], row[4], row[5]))
         try:
-            manifest_dict[study_dir].append(t)
+            manifest_dict[study_dir].append(row)
         except KeyError:
-            manifest_dict[study_dir] = [t]
+            manifest_dict[study_dir] = [row]
     oufh.close()
     # now write per-study manifests
     for study_dir in manifest_dict:
         dirpath = os.path.join(outdir, study_dir)
         if os.path.exists(dirpath):
-            study_symbol = convert_study_dir_to_symbol(study_dir)
             fpath_manifest = os.path.join(dirpath, fnam_manifest)
             oufh = open(fpath_manifest, 'w')
             oufh.write(MANIFEST_HEADER)
-            for t in manifest_dict[study_dir]:
-                oufh.write(MANIFEST_FMT.format(t[:2]+(study_symbol,)+t[3:]))
+            for row in manifest_dict[study_dir]:
+                oufh.write(MANIFEST_FMT.format(row[:3], row[3], row[4], row[5]))
             oufh.close()
         else:
             sys.stderr.write("WARNING: directory {:s} does not exist.".format(dirpath))
@@ -198,6 +198,25 @@ def get_file_paths_dict(dirnam_input, pool_id):
             filpaths.update(get_file_list_dict(direntry))
     return filpaths
 
+def get_manifest_entries_for_encrytped_file_path(fpath):
+    csm = NONE_SYMBOL
+    csm_unencrypted = NONE_SYMBOL
+    if fpath is None:
+        fn = NONE_SYMBOL
+    else:
+        fn = os.path.basename(fpath)
+        check_sums = read_md5_checksum(fpath)
+        if check_sums:
+            csm = check_sums[0]
+        else:
+            sys.stderr.write("WARNING: could not access {:s}{:s} file.\n".format(fn,FILE_EXT_CHECKSUM))
+        check_sums_unencrypted = read_md5_checksum_unencrypted(fpath)
+        if check_sums_unencrypted:
+            csm_unencrypted = check_sums_unencrypted[0]
+        else:
+            sys.stderr.write("WARNING: could not access unencrypted {:s} checksum file.\n".format(fn))
+    return fn, csm, csm_unencrypted
+
 def split_dataset(study_dict, dirnam_input, pool_id, dirnam_output):
     # if dirnam_encrypted is not None: fetch engrypted *.gpg and *.gpg.md5 file from that directory
     print("\n=====================\n==+ split_dataset ==+\n=====================")
@@ -211,10 +230,6 @@ def split_dataset(study_dict, dirnam_input, pool_id, dirnam_output):
         dstn = os.path.join(dirnam_output, d)
         if not os.access(dstn, os.F_OK):
             os.mkdir(dstn)
-    #fofn_name = os.path.join(dirnam_input, FOFN_NAME_INPUT)
-    #print("opening file ", fofn_name)
-    #infh = open(fofn_name, 'r')
-    #for row in csv.DictReader(infh, delimiter='\t'):
     filpath_dict = get_file_paths_dict(dirnam_input, pool_id)
     print("filpath_dict", filpath_dict)
     for study_name in study_dict:
@@ -227,31 +242,14 @@ def split_dataset(study_dict, dirnam_input, pool_id, dirnam_output):
             fpaths = filpath_dict[donor_id]
             print(donor_id, fpaths)
             make_symlinks(dst_dir, fpaths)
-            t = [pool_id, donor_id, dstdn]
+            manifest_row = [pool_id, donor_id, dstdn]
             for fpath in fpaths:
-                csm = NONE_SYMBOL
-                csm_unencrypted = NONE_SYMBOL
-                if fpath is None:
-                    fn = NONE_SYMBOL
-                else:
-                    fn = os.path.basename(fpath)
-                    check_sums = read_md5_checksum(fpath)
-                    if check_sums:
-                        csm = check_sums[0]
-                    else:
-                        sys.stderr.write("WARNING: could not access {:s}{:s} file.\n".format(fn,FILE_EXT_CHECKSUM))
-                    check_sums_unencrypted = read_md5_checksum_unencrypted(fpath)
-                    if check_sums_unencrypted:
-                        csm_unencrypted = check_sums_unencrypted[0]
-                    else:
-                        sys.stderr.write("WARNING: could not access unencrypted {:s} checksum file.\n".format(fn))
-                t.append(fn)
-                t.append(csm)
-                t.append(csm_unencrypted)
+                data_tup = get_manifest_entries_for_encrytped_file_path(fpath)
+                manifest_row.append(data_tup)
             if donor_id in manifest_dict:
                 sys.exit("ERROR: donor '{:s}' occurs multiple time in pool '{:s}'"
                     .format(donor_id, pool_id))
-            manifest_dict[donor_id] = tuple(t)
+            manifest_dict[donor_id] = manifest_row
     return manifest_dict
 
 if __name__ == '__main__':
@@ -272,7 +270,7 @@ if __name__ == '__main__':
     os.makedirs(dirnam_output, exist_ok = False)
 
     #study_dict = load_donor_assignments(fnam_donor_assignments)
-    manifest = []
+    manifest_rows = []
     cram_dirs = []
     if cram_dirs_input:
         cram_dirs = load_dirs_from_file(cram_dirs_input)
@@ -286,7 +284,9 @@ if __name__ == '__main__':
             print("manifest_crams", manifest_crams)
         else:
             manifest_crams = None
-        manifest.extend(join_manifests(manifest_pool, manifest_crams))
+        manifest_joined_rows = merge_manifest_rows(manifest_pool, manifest_crams)
+        print("manifest_joined_rows", manifest_joined_rows)
+        manifest_rows.extend(manifest_joined_rows)
 
-    write_manifest(dirnam_output, tranche_name, manifest, fnam_manifest = FNAM_MANIFEST)
+    write_manifest(dirnam_output, tranche_name, manifest_rows, fnam_manifest = FNAM_MANIFEST)
     sys.exit(0)
