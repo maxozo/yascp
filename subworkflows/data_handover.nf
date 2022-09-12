@@ -61,10 +61,10 @@ workflow data_handover{
           ch_poolid_csv_donor_assignment_gathered
           )
 
-        //SUMMARY_STATISTICS_PLOTS(outdir,GATHER_DATA.out.outfiles_dataset,params.input_data_table)
+        SUMMARY_STATISTICS_PLOTS(outdir,GATHER_DATA.out.outfiles_dataset,params.input_data_table)
 
         // We also generate a report.
         // If we run it in sanger we transfer the data to the local website.
-        //TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots)
+        TRANSFER(SUMMARY_STATISTICS_PLOTS.out.summary_plots)
 
 }
