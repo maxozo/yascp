@@ -57,11 +57,17 @@ workflow TEST_SUBSET_GENOTYPES {
 //      [study_label, file(conversion_table_vacutainerid_donor_id), file(vcf_chunk_file), file(vcf_chunk_index)]
 //  }.set { ch_study_idconversion_vcf_vcfidx }
 
-ch_poolid_vacutainerids.subscribe onNext: { println "ch_poolid_vacutainerids: $it" }, onComplete: { println 'Done' }
-ch_study_conversion_file.subscribe onNext: { println "ch_study_conversion_file: $it" }, onComplete: { println 'Done' }
-//ch_study_idconversion_vcf_vcfidx.subscribe onNext: { println "ch_study_idconversion_vcf_vcfidx: $it" }, onComplete: { println 'Done' }
+  ch_poolid_vacutainerids.subscribe onNext: { println "ch_poolid_vacutainerids: $it" }, onComplete: { println 'Done' }
+  ch_study_conversion_file.subscribe onNext: { println "ch_study_conversion_file: $it" }, onComplete: { println 'Done' }
+  //ch_study_idconversion_vcf_vcfidx.subscribe onNext: { println "ch_study_idconversion_vcf_vcfidx: $it" }, onComplete: { println 'Done' }
 
-  VACUTAINER_TO_DONOR_ID(ch_poolid_vacutainerids, ch_study_conversion_file)
+  ch_poolid_vacutainerids
+    .combine (ch_study_conversion_file)
+    .set { ch_pool_id_vacutainerids_study_bridgefil }
+  ch_pool_id_vacutainerids_study_bridgefil
+  .subscribe onNext: { println "ch_poolid_vacutainerids_study_bridgefil: $it" }, onComplete: { println "Done" }
+
+  VACUTAINER_TO_DONOR_ID(ch_pool_id_vacutainerids_study_bridgefil)
   VACUTAINER_TO_DONOR_ID.out.study_pool_donorfil
   //.filter { file(it[2]).countlines() > 0 } // this doesn't work: try map first, then filter
   .set { ch_study_pool_donorfil }
@@ -83,18 +89,21 @@ ch_study_conversion_file.subscribe onNext: { println "ch_study_conversion_file: 
     .subscribe onNext: { println "CHECK_DONORS_IN_VCF_HEADER.out.study_pool_donorfil: $it" }, onComplete: { println 'Done' }
 
   CHECK_DONORS_IN_VCF_HEADER.out.study_pool_donorfil
-    .join(ch_ref_vcf)
+    .combine(ch_ref_vcf, by: 0)
     .set { ch_study_pool_donorfil_refvcf_refvcfidx }
 
   ch_study_pool_donorfil_refvcf_refvcfidx
     .subscribe onNext: { println "ch_study_pool_donorfil_refvcf_refvcfidx: $it" }, onComplete: { println "Done" }
 
   SELECT_DONOR_GENOTYPES_FROM_VCF(ch_study_pool_donorfil_refvcf_refvcfidx)
-  SELECT_DONOR_GENOTYPES_FROM_VCF.out.study_pool_bcfgz.view()
-  //SELECT_DONOR_GENOTYPES_FROM_VCF.out.study_pool_bcfgz
-  //  .groupTuple(by: [0,1])
-  //  .set { ch_study_pool_vcfchunks }
-  // ch_study_pool_vcfchunks
-  // .subscribe onNext: { println "ch_study_pool_vcfchunks: $it" }, onComplete: { println "Done" }
+  //SELECT_DONOR_GENOTYPES_FROM_VCF.out.study_pool_bcfgz.view()
+  SELECT_DONOR_GENOTYPES_FROM_VCF.out.study_pool_bcfgz
+    .groupTuple(by: [0,1])
+    .set { ch_study_pool_vcfchunks }
+
+  ch_study_pool_vcfchunks
+    .subscribe onNext: { println "ch_study_pool_vcfchunks: $it" }, onComplete: { println "Done" }
+
+  ch_study_pool_vcfchunks.view()
   //CONCAT_STUDY_VCFS(ch_study_pool_vcfchunks)
 }

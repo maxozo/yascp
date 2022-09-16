@@ -3,8 +3,7 @@ process VACUTAINER_TO_DONOR_ID {
   label 'process_tiny'
 
   input:
-    tuple val(pool_id), val(comma_separated_list_of_vacutainer_ids)
-    tuple val(study_label), path(conversion_file)
+    tuple val(pool_id), val(comma_separated_list_of_vacutainer_ids), val(study_label), path(conversion_file)
 
   output:
     tuple val(study_label), val(pool_id), path(file_of_donor_ids), emit: study_pool_donorfil optional true
