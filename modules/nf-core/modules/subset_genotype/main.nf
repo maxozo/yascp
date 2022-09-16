@@ -7,7 +7,7 @@ process VACUTAINER_TO_DONOR_ID {
     tuple val(study_label), path(conversion_file)
 
   output:
-    val(study_label), val(pool_id), path(file_of_donor_ids), emit: study_pool_donorfil
+    tuple val(study_label), val(pool_id), path(file_of_donor_ids), emit: study_pool_donorfil optional true
 
   script:
   file_of_donor_ids = "${study_label}.${pool_id}.donor_ids.txt"
@@ -17,6 +17,12 @@ process VACUTAINER_TO_DONOR_ID {
     echo "list_of_vacutainer_ids: ${comma_separated_list_of_vacutainer_ids}"
     echo "${file_of_donor_ids}"
     vacutainer_to_donor_id.py ${conversion_file} ${comma_separated_list_of_vacutainer_ids} ${file_of_donor_ids}
+
+    # remove file if empty so as to emit no output and stop downstream processes here
+    rv=(\$(wc -l ${file_of_donor_ids}))
+    if [ \${rv[0]} < 1 ]; then
+      rm \${file_of_donor_ids}
+    fi
   """
 }
 
@@ -48,7 +54,7 @@ process CHECK_DONORS_IN_VCF_HEADER {
     tuple val(study_label), val(pool_id), path(txt_file_pool_donor_list), path(list_of_vcf_donors_file)
 
   output:
-    tuple val(study_label), val(pool_id), path(tsv_table_of_checked_donor_ids), emit:study_pool_donorfil
+    tuple val(study_label), val(pool_id), path(tsv_table_of_checked_donor_ids), emit:study_pool_donorfil optional true
 
   script:
   tsv_table_of_checked_donor_ids = "${pool_id}.${study_label}.donor_ids_checked.tsv"
@@ -60,6 +66,11 @@ process CHECK_DONORS_IN_VCF_HEADER {
   echo "output: ${tsv_table_of_checked_donor_ids}"
 
   find_pooled_donor_ids_in_vcf.py ${list_of_vcf_donors_file} ${txt_file_pool_donor_list} ${tsv_table_of_checked_donor_ids}
+
+  rv=(\$(wc -l ${tsv_table_of_checked_donor_ids}))
+  if [ \${rv[0]} < 1 ]; then
+    rm \${tsv_table_of_checked_donor_ids}
+  fi
   """
 }
 
@@ -72,16 +83,39 @@ process SELECT_DONOR_GENOTYPES_FROM_VCF {
   }
 
   input:
-    tuple val(pool_id), val(study_label), path(donor_table), path(study_vcf), path(study_vcf_index)
+    tuple val(study_label), val(pool_id), path(donor_table), path(study_vcf), path(study_vcf_index)
 
   output:
-    tuple val(pool_id), val(study_label), path(pool_study_bcfgz), emit: pool_study_bcfgz
+    tuple val(study_label), val(pool_id), path(pool_study_bcfgz), emit: study_pool_bcfgz
+
+  script:
+  pool_study_bcfgz = "${pool_id}.${study_vcf}.bcf.gz"
+  """
+    awk 'NR>1 && \$2 !~/^N\$/ {print \$1}' ${donor_table} > donors.lst
+    bcftools view -S donors.lst -Ob -o ${pool_study_bcfgz} ${study_vcf}
+  """
+}
+
+process CONCAT_STUDY_VCFS {
+  label 'process_small'
+
+  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+      container "/software/hgi/containers/wtsihgi-nf_yascp_htstools-1.1.sif"
+  } else {
+      container "mercury/wtsihgi-nf_yascp_htstools-1.1"
+  }
+
+  input:
+    val(study_label), tuple val(pool_id), path( study_vcf_files )
+
+  output:
+    tuple val(study_label), val(pool_id), path(pool_study_bcfgz), emit: study_pool_bcfgz
 
   script:
   pool_study_bcfgz = "${pool_id}.${study_label}.bcf.gz"
   """
-    awk 'NR>1 && \$2 !~/^N\$/ {print \$1}' ${donor_table} > donors.lst
-    bcftools view -S donors.lst -Ob -o ${pool_study_bcfgz} ${study_vcf}
+    cat "${study_vcf_files}" > ./fofn_vcfs.txt
+    bcftools concat --threads ${task.threads} -f ./fofn_vcfs.txt -Ob -o ${pool_study_bcfgz}
   """
 }
 

@@ -5,7 +5,8 @@ nextflow.enable.dsl = 2
 include {
   VACUTAINER_TO_DONOR_ID;
   FETCH_DONOR_IDS_FROM_VCF;
-  CHECK_DONORS_IN_VCF_HEADER
+  CHECK_DONORS_IN_VCF_HEADER;
+  SELECT_DONOR_GENOTYPES_FROM_VCF
   } from '../modules/nf-core/modules/subset_genotype/main'
 
 workflow TEST_SUBSET_GENOTYPES {
@@ -62,7 +63,7 @@ ch_study_conversion_file.subscribe onNext: { println "ch_study_conversion_file: 
 
   VACUTAINER_TO_DONOR_ID(ch_poolid_vacutainerids, ch_study_conversion_file)
   VACUTAINER_TO_DONOR_ID.out.study_pool_donorfil
-  //.filter { file(it[2]).countlines() > 0 }
+  //.filter { file(it[2]).countlines() > 0 } // this doesn't work: try map first, then filter
   .set { ch_study_pool_donorfil }
 
   VACUTAINER_TO_DONOR_ID.out.study_pool_donorfil
@@ -78,5 +79,22 @@ ch_study_conversion_file.subscribe onNext: { println "ch_study_conversion_file: 
     .subscribe onNext: { println "ch_study_pool_donorspool_donorsvcf_vcffil_vcfidxf: $it" }, onComplete: { println 'Done' }
 
   CHECK_DONORS_IN_VCF_HEADER(ch_study_pool_donorspool_donorsvcf)
-  CHECK_DONORS_IN_VCF_HEADER.out.study_pool_donorfil.view()
+  CHECK_DONORS_IN_VCF_HEADER.out.study_pool_donorfil
+    .subscribe onNext: { println "CHECK_DONORS_IN_VCF_HEADER.out.study_pool_donorfil: $it" }, onComplete: { println 'Done' }
+
+  CHECK_DONORS_IN_VCF_HEADER.out.study_pool_donorfil
+    .join(ch_ref_vcf)
+    .set { ch_study_pool_donorfil_refvcf_refvcfidx }
+
+  ch_study_pool_donorfil_refvcf_refvcfidx
+    .subscribe onNext: { println "ch_study_pool_donorfil_refvcf_refvcfidx: $it" }, onComplete: { println "Done" }
+
+  SELECT_DONOR_GENOTYPES_FROM_VCF(ch_study_pool_donorfil_refvcf_refvcfidx)
+  SELECT_DONOR_GENOTYPES_FROM_VCF.out.study_pool_bcfgz.view()
+  //SELECT_DONOR_GENOTYPES_FROM_VCF.out.study_pool_bcfgz
+  //  .groupTuple(by: [0,1])
+  //  .set { ch_study_pool_vcfchunks }
+  // ch_study_pool_vcfchunks
+  // .subscribe onNext: { println "ch_study_pool_vcfchunks: $it" }, onComplete: { println "Done" }
+  //CONCAT_STUDY_VCFS(ch_study_pool_vcfchunks)
 }

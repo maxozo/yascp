@@ -20,7 +20,10 @@ with open(fnam_conversion_table, 'r') as infh:
     for lin in infh:
         fld = lin.split()
         print(fld)
-        if fld[1] in vacutainer_ids:
+
+        if fld[1] in vacutainer_ids or \
+            fld[1].lstrip('0') in vacutainer_ids:
+            # bridge file doesn't contain leading 0s for UKBB IDs like '0030007452847'
             oufh.write("{:s}\n".format(fld[0]))
 
 oufh.close()
