@@ -6,26 +6,13 @@ include { GT_MATCH_POOL_IBD as GT_MATCH_INFERED_EXPECTED; ENHANCE_STATS_FILE } f
 
 workflow Relationships_Between_Infered_Expected {
     take:
-      ch_ref_vcf
       donors_in_pools
+      merged_expected_genotypes
       vireo_GT_Genotypes
       mode
       donor_match_table
       idb_pool
     main:
-      
-      donors_in_pools.combine(ch_ref_vcf).set{all_GT_pannels_and_pools}
-      // subset genotypes per pool, per chromosome split.
-      SUBSET_GENOTYPE2(all_GT_pannels_and_pools)
-      SUBSET_GENOTYPE2.out.subset_vcf_file.groupTuple().set{chromosome_vcfs_per_studypool}
-      // combnie all the chromosomes per pool
-      // chromosome_vcfs_per_studypool.view()
-      // Now we combine all the chromosomes together.
-      JOIN_CHROMOSOMES(chromosome_vcfs_per_studypool)
-      JOIN_CHROMOSOMES.out.joined_chromosomes_per_studytrance.groupTuple().set{study_vcfs_per_pool}
-      // Merge all the pools.
-      JOIN_STUDIES_MERGE(study_vcfs_per_pool,'Study_Merge')
-      JOIN_STUDIES_MERGE.out.merged_expected_genotypes.set{merged_expected_genotypes}
       
       vireo_GT_Genotypes.map { row -> tuple("${row[0]}", row[1],row[2]) }.set { vireo_GT_Genotypes }
       // vireo_GT_Genotypes.view()

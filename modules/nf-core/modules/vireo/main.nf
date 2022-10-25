@@ -38,11 +38,14 @@ process VIREO {
     script:
       vcf_file = ""
       if (params.run_with_genotype_input & params.genotype_input.posterior_assignment==false){
-        vcf = " -d ${donors_gt_vcf}"
+        vcf = " -d ${donors_gt_vcf} --forceLearnGT"
         vcf_file = donors_gt_vcf
+        com2 = "cd vireo_${samplename} && ln -s ../${donors_gt_vcf} GT_donors.vireo.vcf.gz"
+        com2 = ""
       }else{
          vcf = ""
          vcf_file = donors_gt_vcf
+         com2 = ""
       }
 
     """
@@ -50,7 +53,7 @@ process VIREO {
       umask 2 # make files group_writable
 
       
-      vireo -c $cell_data -N $n_pooled -o vireo_${samplename} ${vcf} -t GT --randSeed 1 --nInit 200
+      vireo -c $cell_data -N $n_pooled -o vireo_${samplename} ${vcf} -t GT --randSeed 1 -p $task.cpus --nInit 200
       # add samplename to summary.tsv,
       # to then have Nextflow concat summary.tsv of all samples into a single file:
       gzip vireo_${samplename}/GT_donors.vireo.vcf || echo 'vireo_${samplename}/GT_donors.vireo.vcf already gzip'
@@ -61,6 +64,6 @@ process VIREO {
       cat vireo_${samplename}/summary.tsv | \\
         tail -n +2 | \\
         sed s\"/^/${samplename}__/\"g > vireo_${samplename}/${samplename}__exp.sample_summary.txt
-
+      ${com2}
     """
 }

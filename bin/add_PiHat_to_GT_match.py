@@ -160,12 +160,12 @@ def main():
         donor_gt = row1['donor_gt']
         donor_querry = row1['donor_query']
 
-        set1 =Genome_PiHAT[Genome_PiHAT['IID1'].str.contains(donor_querry)]
-        set2 =Genome_PiHAT[Genome_PiHAT['IID2'].str.contains(donor_querry)]
+        set1 =Genome_PiHAT[Genome_PiHAT['IID1']==donor_querry]
+        set2 =Genome_PiHAT[Genome_PiHAT['IID2']==donor_querry]
         combo=pd.concat([set1,set2])
 
-        set2_1 =combo[combo['IID1'].str.contains(donor_gt)]
-        set2_2 =combo[combo['IID2'].str.contains(donor_gt)]
+        set2_1 =combo[combo['IID1']==donor_gt]
+        set2_2 =combo[combo['IID2']==donor_gt]
         combo2=pd.concat([set2_1,set2_2])
         
         if Condition_Column=='Expected' and wpi:    

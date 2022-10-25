@@ -4,10 +4,12 @@ include { MATCH_GT_VIREO; GT_MATCH_POOL_IBD } from '../modules/nf-core/modules/g
 include {GT_IBD_MATCH_RELATIONSHIPS} from '../modules/nf-core/modules/ibd_relationsips/main'
 include {COMBINE_MATCHES_IN_EXPECTED_FORMAT} from '../modules/nf-core/modules/genotypes/main'
 include {Relationships_Between_Infered_Expected; Relationships_Between_Infered_Expected as Relationships_Between_Infered_GT_Matched} from '../modules/nf-core/modules/infered_expected_relationship/main'
+include {SUBSET_WORKF} from "$projectDir/modules/nf-core/modules/subset_genotype/main"
 
 workflow match_genotypes {
   take:
     ch_pool_id_vireo_vcf
+    merged_expected_genotypes
 
   main:
     Channel.fromPath(
@@ -36,6 +38,7 @@ workflow match_genotypes {
       checkIfExists: true
     ).splitCsv(header: true, sep: '\t').map { row -> tuple(row.experiment_id, row.donor_vcf_ids) }
     .set { donors_in_pools }
+    
     MATCH_GT_VIREO.out.gt_pool.set{vireo_GT_Genotypes}
     // «««««««««
     // compare genotypes within a pool (identity by descent)
@@ -43,13 +46,6 @@ workflow match_genotypes {
     GT_MATCH_POOL_IBD.out.plink_ibd.set{idb_pool}
     // compare genotypes with the expected/matched genotypes to estimate the relationship between matches.
     // #### Note: this code takes in the subset genotypes (either determines as an expected inputs or determined as final matches [dependant on flag] and also the final GT match results to later extract the PI_HAT value)
-
-    // We have to produce a single vcf file for each individual pool.
-    Channel.fromPath(params.input_data_table,      
-      followLinks: true,
-      checkIfExists: true
-    ).splitCsv(header: true, sep: '\t').map { row -> tuple(row.experiment_id, row.donor_vcf_ids) }
-    .set { donors_in_pools }
 
     Channel.fromPath(
       params.genotype_input.tsv_donor_panel_vcfs,
@@ -59,9 +55,11 @@ workflow match_genotypes {
     .map { row -> tuple(row.label, file(row.vcf_file_path), file("${row.vcf_file_path}.csi")) }
     .set { ch_ref_vcf }
 
-    
-    Relationships_Between_Infered_Expected(ch_ref_vcf,donors_in_pools,vireo_GT_Genotypes,'Expected',MATCH_GT_VIREO.out.donor_match_table_with_pool_id,idb_pool)
-    Relationships_Between_Infered_GT_Matched(ch_ref_vcf,gt_matched_samples,vireo_GT_Genotypes,'GT_Matched', Relationships_Between_Infered_Expected.out.donor_match_table,idb_pool)
+    SUBSET_WORKF(ch_ref_vcf,gt_matched_samples)
+    merged_GT_Matched_genotypes = SUBSET_WORKF.out.merged_expected_genotypes
+
+    Relationships_Between_Infered_Expected(donors_in_pools,merged_expected_genotypes,vireo_GT_Genotypes,'Expected',MATCH_GT_VIREO.out.donor_match_table_with_pool_id,idb_pool)
+    Relationships_Between_Infered_GT_Matched(gt_matched_samples,merged_GT_Matched_genotypes,vireo_GT_Genotypes,'GT_Matched', Relationships_Between_Infered_Expected.out.donor_match_table,idb_pool)
     
     Relationships_Between_Infered_Expected.out.done_validation.set{ou1}
     Relationships_Between_Infered_GT_Matched.out.done_validation.set{ou2}
