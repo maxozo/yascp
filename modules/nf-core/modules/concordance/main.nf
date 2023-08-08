@@ -25,7 +25,7 @@ process CONCORDANCE_CALCLULATIONS {
     output:
         tuple val(pool_id), path("cell_concordance_table_noA2G.tsv"), emit: concordances_noAG
         tuple val(pool_id), path('discordant_sites_in_other_donors_noA2G.txt'), emit: read_concordances_noAG
-        tuple val(pool_id), path("cell_concordance_tableG.tsv"), emit: concordances
+        tuple val(pool_id), path("cell_concordance_table.tsv"), emit: concordances
         tuple val(pool_id), path('discordant_sites_in_other_donors.txt'), emit: read_concordances
 
     script:
@@ -40,7 +40,7 @@ process CONCORDANCE_CALCLULATIONS {
             concordance_calculations_donor_exclusive_read_level_noA2G.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --informative_sites ${set2_informative_sites} --uninformative_sites ${set1_uninformative_sites}
             find_discordant_sites_in_other_donors_noA2G.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors_noA2G.txt --debug
             concordance_calculations_donor_exclusive_read_level.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --informative_sites ${set2_informative_sites} --uninformative_sites ${set1_uninformative_sites}
-            find_discordant_sites_in_other_donors.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors.txt --debug
+            find_discordant_sites_in_other_donors_find_best_donor.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors.txt --debug
         """
 }
 
