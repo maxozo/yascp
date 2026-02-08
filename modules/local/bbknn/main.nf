@@ -8,15 +8,12 @@ def random_hex(n) {
     Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
 }
 
-
 process BBKNN{
     
     // Calulates bbknn neighbors and saves UMAPS of these
-    // ------------------------------------------------------------------------
-    //cache false        // cache results from run
+
     scratch false      // use tmp directory
 
-    // label 'process_medium'
     memory { 
             def sizeInGB = file__anndata.size() / 1e9 * 3 * task.attempt
             def minimumGB = 5
@@ -61,8 +58,6 @@ process BBKNN{
         path(file__metadata, emit: metadata)
         path(file__pcs, emit: pcs)
         path("reduced_dims.tsv.gz", emit: reduced_dims)
-        // NOTE: passing the param details as an unpublished file is messy,
-        // but I could not get collect of ${param_details} and file to work.
         path(
             "reduced_dims-${param_details}.tsv.gz",
             emit: reduced_dims_params
