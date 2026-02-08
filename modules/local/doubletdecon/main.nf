@@ -46,15 +46,15 @@ process DOUBLET_DECON{
             cat <<-END_VERSIONS > versions.yml
             "${task.process}":
                 r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
-                DoubletDecon: \$(Rscript -e "cat(as.character(packageVersion('DoubletDecon')))")
-                argparse: \$(Rscript -e "cat(as.character(packageVersion('argparse')))")
-                tidyverse: \$(Rscript -e "cat(as.character(packageVersion('tidyverse')))")
-                Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
-                ggplot2: \$(Rscript -e "cat(as.character(packageVersion('ggplot2')))")
-                data.table: \$(Rscript -e "cat(as.character(packageVersion('data.table')))")
-                viridis: \$(Rscript -e "cat(as.character(packageVersion('viridis')))")
-                SeuratDisk: \$(Rscript -e "cat(as.character(packageVersion('SeuratDisk')))")
-                future.apply: \$(Rscript -e "cat(as.character(packageVersion('future.apply')))")
+                r library argparse: \$(Rscript -e "cat(as.character(packageVersion('argparse')))")
+                r library data.table: \$(Rscript -e "cat(as.character(packageVersion('data.table')))")
+                r library DoubletDecon: \$(Rscript -e "cat(as.character(packageVersion('DoubletDecon')))")
+                r library ggplot2: \$(Rscript -e "cat(as.character(packageVersion('ggplot2')))")
+                r library future.apply: \$(Rscript -e "cat(as.character(packageVersion('future.apply')))")
+                r library Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
+                r library SeuratDisk: \$(Rscript -e "cat(as.character(packageVersion('SeuratDisk')))")
+                r library tidyverse: \$(Rscript -e "cat(as.character(packageVersion('tidyverse')))")
+                r library viridis: \$(Rscript -e "cat(as.character(packageVersion('viridis')))")
             END_VERSIONS
         """
 }

@@ -36,7 +36,7 @@ process DONT_INTEGRATE{
         outfile = "outfile_adata"
         """
         
-        0045-reduce_dims_file.py \
+        reduce_dims_file.py \
             --h5_anndata ${file__anndata} \
             --n_pcs ${n_pcs} \
             --output_file ${outfile}-dontIntegrate
@@ -48,12 +48,12 @@ process DONT_INTEGRATE{
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             python: \$(python --version | sed 's/Python //g')
-            bbknn: \$(python -c "import bbknn; print(bbknn.__version__)")
-            scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
-            argparse: \$(python -c "import argparse; print(argparse.__version__)")
-            distutils: \$(python -c "import distutils; print(distutils.__version__)")
-            numpy: \$(python -c "import numpy; print(numpy.__version__)")
-            pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library bbknn: \$(python -c "import bbknn; print(bbknn.__version__)")
+            python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
         END_VERSIONS
         """
 

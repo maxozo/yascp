@@ -1,4 +1,4 @@
-process capture_cellsnp_files{
+process CAPTURE_CELLSNP_FILES{
 
   publishDir  path: "${params.outdir}/deconvolution/",
         saveAs: {filename ->
@@ -91,7 +91,7 @@ process DYNAMIC_DONOR_EXCLUSIVE_SNP_SELECTION{
 }
 
 
-process mpileup {
+process MPILEUP {
     label 'deduplication'
     publishDir "${params.outdir}/deconvolution/mpileup", mode: 'copy'
 
@@ -107,11 +107,11 @@ process mpileup {
         path(ref_gen)
     output:
         tuple val(sample_id), path("${sample_id}__piled_up_reads.vcf"), emit: pileup
-        path("${sample_id}__barcodes.txt")
+        // path("${sample_id}__barcodes.txt")
     script:
     """
         # Extract cell barcodes from BAM
-        samtools view "${bam}" | grep -oP '${params.cellsnp.cellTAG}:Z:\\K[^\\t]+'  > "${sample_id}__barcodes.txt"
+        #samtools view "${bam}" | grep -oP '${params.cellsnp.cellTAG}:Z:\\K[^\\t]+'  > "${sample_id}__barcodes.txt"
 
         ref_fa=\$(find "\$(realpath ${ref_gen})" -maxdepth 1 -type f \\( -name "*.fa" -o -name "*.fasta" \\) | head -n 1)
         
@@ -122,32 +122,6 @@ process mpileup {
         bcftools call -mv -V indels --ploidy 2 -Ov -o ${sample_id}__piled_up_reads.vcf
     """
 }
-
-process subset_vcf {
-    label 'deconvolution'
-    publishDir "${params.outdir}/deconvolution/mpileup", mode: 'copy'
-
-    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.yascp_container}"
-
-    } else {
-        container "${params.yascp_container_docker}"
-    }
-
-    input:
-        tuple val(sample_id), path(sample_id__piled_up_reads)
-        path(subset_regions_bed)
-    output:
-        tuple val(sample_id), path("${sample_id}__piled_up_reads__subset.vcf.gz")
-    script:
-    """
-        bgzip -c ${sample_id__piled_up_reads} > ${sample_id}__tmp.vcf.gz
-        tabix -p vcf ${sample_id}__tmp.vcf.gz
-        bcftools view -R ${subset_regions_bed} ${sample_id}__tmp.vcf.gz -Oz -o ${sample_id}__piled_up_reads__subset.vcf.gz
-    """
-}
-
-
 
 process ASSESS_CALL_RATE{
 

@@ -42,16 +42,16 @@ process DOUBLET_FINDER {
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
-            DoubletFinder: \$(Rscript -e "cat(as.character(packageVersion('DoubletFinder')))")
-            Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
-            argparse: \$(Rscript -e "cat(as.character(packageVersion('argparse')))")
-            ggplot2: \$(Rscript -e "cat(as.character(packageVersion('ggplot2')))")
-            dplyr: \$(Rscript -e "cat(as.character(packageVersion('dplyr')))")
-            tidyr: \$(Rscript -e "cat(as.character(packageVersion('tidyr')))")
-            tidyverse: \$(Rscript -e "cat(as.character(packageVersion('tidyverse')))")
-            viridis: \$(Rscript -e "cat(as.character(packageVersion('viridis')))")
-            SeuratDisk: \$(Rscript -e "cat(as.character(packageVersion('SeuratDisk')))")
-            future.apply: \$(Rscript -e "cat(as.character(packageVersion('future.apply')))")
+            r library argparse: \$(Rscript -e "cat(as.character(packageVersion('argparse')))")
+            r library DoubletFinder: \$(Rscript -e "cat(as.character(packageVersion('DoubletFinder')))")
+            r library dplyr: \$(Rscript -e "cat(as.character(packageVersion('dplyr')))")
+            r library future.apply: \$(Rscript -e "cat(as.character(packageVersion('future.apply')))")
+            r library ggplot2: \$(Rscript -e "cat(as.character(packageVersion('ggplot2')))")
+            r library Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
+            r library SeuratDisk: \$(Rscript -e "cat(as.character(packageVersion('SeuratDisk')))")
+            r library tidyr: \$(Rscript -e "cat(as.character(packageVersion('tidyr')))")
+            r library tidyverse: \$(Rscript -e "cat(as.character(packageVersion('tidyverse')))")
+            r library viridis: \$(Rscript -e "cat(as.character(packageVersion('viridis')))")
         END_VERSIONS
         """
 }

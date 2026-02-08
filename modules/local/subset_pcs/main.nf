@@ -61,7 +61,7 @@ process SUBSET_PCS{
         outdir = "${outdir_prev}/reduced_dims-${param_details}"
         """
         echo "publish_directory: ${outdir}"
-        0045-subset_pca_file.py \
+        subset_pca_file.py \
             --tsv_pcs ${file__pcs} \
             --number_pcs ${n_pcs} \
             --output_file reduced_dims

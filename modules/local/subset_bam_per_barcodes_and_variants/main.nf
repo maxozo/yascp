@@ -45,8 +45,8 @@ process SUBSET_BAM_PER_BARCODES_AND_VARIANTS {
 
             cat <<-END_VERSIONS > versions.yml
             "${task.process}":
-                samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
                 bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
+                samtools: \$(echo \$(samtools --version 2>&1) | sed 's/^.*samtools //; s/Using.*\$//')
             END_VERSIONS
         """
 

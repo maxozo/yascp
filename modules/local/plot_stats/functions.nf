@@ -2,7 +2,7 @@ def random_hex(n) {
     Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
 }
 
-process plot_filtered_cells {
+process PLOT_FILTERED_CELLS {
     // Takes annData object, plots filtered cells
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -30,7 +30,7 @@ process plot_filtered_cells {
 
         """
         echo "publish_directory: ${outdir}"
-        0026-plot_filtered_cells.py \
+        plot_filtered_cells.py \
             --tsv_file ${file__filtered_cells} \
             --output_file adata-cell_filtered_per_experiment
 
@@ -39,7 +39,7 @@ process plot_filtered_cells {
 
 
 
-process plot_pcs {
+process PLOT_PCS {
     // Takes annData object with PCs and returns plots
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -91,7 +91,7 @@ process plot_pcs {
 }
 
 
-process plot_predicted_sex {
+process PLOT_PREDICTED_SEX {
     // Takes annData object, plots the predicted sex fron gene expression
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -119,13 +119,13 @@ process plot_predicted_sex {
         outfile = "scatterplot-sex_sample_swap_check"
         """
         echo "publish_directory: ${outdir}"
-        0028-plot_predicted_sex.py \
+        plot_predicted_sex.py \
             --h5_anndata ${file__anndata} \
             --output_file ${outfile}
         """
 }
 
-process plot_qc {
+process PLOT_QC {
     // Takes annData object, generates basic qc plots
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -174,14 +174,14 @@ process plot_qc {
                 --h5_anndata ${file__anndata} \
                 --output_file ${outfile} \
                 ${cmd__facet_columns}
-            0027-calculate_mads.py \
+            calculate_mads.py \
                 --h5_anndata ${file__anndata} \
                 --qc_key ${params.mads_categories} \
                 --output_file mads
         """
 }
 
-process plot_distributions {
+process PLOT_DISTRIBUTIONS {
     // Takes annData object, generates basic qc plots
     // ------------------------------------------------------------------------
     //cache false        // cache results from run

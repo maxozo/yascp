@@ -57,13 +57,13 @@ process AZIMUTH{
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
-            Azimuth: \$(Rscript -e "cat(as.character(packageVersion('Azimuth')))")
-            Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
-            SeuratDisk: \$(Rscript -e "cat(as.character(packageVersion('SeuratDisk')))")
-            Matrix: \$(Rscript -e "cat(as.character(packageVersion('Matrix')))")
-            hdf5r: \$(Rscript -e "cat(as.character(packageVersion('hdf5r')))")
-            ggplot2: \$(Rscript -e "cat(as.character(packageVersion('ggplot2')))")
-            tools: \$(Rscript -e "cat(as.character(packageVersion('tools')))")
+            r library Azimuth: \$(Rscript -e "cat(as.character(packageVersion('Azimuth')))")
+            r library ggplot2: \$(Rscript -e "cat(as.character(packageVersion('ggplot2')))")
+            r library hdf5r: \$(Rscript -e "cat(as.character(packageVersion('hdf5r')))")
+            r library Matrix: \$(Rscript -e "cat(as.character(packageVersion('Matrix')))")
+            r library Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
+            r library SeuratDisk: \$(Rscript -e "cat(as.character(packageVersion('SeuratDisk')))")
+            r library tools: \$(Rscript -e "cat(as.character(packageVersion('tools')))")
         END_VERSIONS
 
     """
@@ -94,34 +94,4 @@ process AZIMUTH_ATAC{
     """ 
         azimuth_atac.R ./${file_h5ad_batch} ${refset.refset} ${refset.annotation_labels} ${samplename}
     """
-}
-
-process REMAP_AZIMUTH{
-    // This process remaps Azimuth L2 to L1 and L0
-    tag "${samplename}"    
-    label 'process_low'
-   
-    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.yascp_container}"
-    } else {
-        container "${params.yascp_container_docker}"
-    }
-
-    publishDir  path: "${params.outdir}/celltype_assignment/",
-            mode: "${params.copy_mode}",
-            overwrite: "true"
-    stageInMode 'copy'  
-
-    input:
-        path(file)
-        path(mapping_file)
-
-    output:
-        path("remapped__${file}", emit:predicted_celltype_labels)
-
-    script:
-        """
-            remap_azimuth_l2.py -of remapped__${file} -m ${mapping_file} -az ${file}
-        """
-
 }

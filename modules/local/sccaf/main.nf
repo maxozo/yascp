@@ -1,7 +1,7 @@
 
 include {
-    sccaf_assess_clustering;
-    sccaf_optimize_clustering;
+    SCCAF_ASSESS_CLUSTERING;
+    SCCAF_OPTIMIZE_CLUSTERING;
 } from "./functions.nf"
 
 workflow SCCAF {
@@ -13,13 +13,13 @@ workflow SCCAF {
 
   main:
    
-    sccaf_assess_clustering(
+    SCCAF_ASSESS_CLUSTERING(
         outdir,
         anndata,
         external_clustering
     )
 
-    sccaf_optimize_clustering(
+    SCCAF_OPTIMIZE_CLUSTERING(
         outdir,
         anndata,
         external_clustering,

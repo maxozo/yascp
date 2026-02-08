@@ -1,9 +1,9 @@
 // Modules to include.
 include {
-    plot_filtered_cells;
-    plot_predicted_sex;
-    plot_qc;
-    plot_distributions;plot_pcs;
+    PLOT_FILTERED_CELLS;
+    PLOT_PREDICTED_SEX;
+    PLOT_QC;
+    PLOT_DISTRIBUTIONS;PLOT_PCS;
 } from "./functions.nf"
 
 
@@ -17,40 +17,40 @@ workflow PLOT_STATS {
         
     main:
         // Plot the filtered cells per sample.
-        plot_filtered_cells(
+        PLOT_FILTERED_CELLS(
             params.outdir,
             file__cells_filtered
         )
 
         // Predict sex from gene expression and check against phenotypes.
-        plot_predicted_sex(
+        PLOT_PREDICTED_SEX(
             params.outdir,
             file__anndata_merged
         )
 
         // Make QC plots of the merged data.
-        plot_qc(
+        PLOT_QC(
             params.outdir,
             file__anndata_merged,
             params.plots_qc.facet_columns.value
         )
 
         // Plot Distributions
-        plot_distributions(
+        PLOT_DISTRIBUTIONS(
             params.outdir,
             file__anndata_merged,
             params.plots_qc.facet_columns.value,
             params.plots_qc.variable_columns_distribution_plots.value
         )
 
-        plot_pcs(
+        PLOT_PCS(
             params.outdir,
             anndata,
             n_pcs,
             params.umap.colors_quantitative.value,
             params.umap.colors_categorical.value
         )
-        LI = plot_pcs.out.out_png
+        LI = PLOT_PCS.out.out_png
         emit:
             LI
 }

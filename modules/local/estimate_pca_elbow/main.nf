@@ -46,7 +46,7 @@ process ESTIMATE_PCA_ELBOW {
         outfile = "${outfile}-knee"
         """
             rm -fr plots
-            0030-estimate_pca_elbow.py \
+            estimate_pca_elbow.py \
                 --h5_anndata ${file__anndata} \
                 --add_n_pcs_to_elbow ${add_n_to_estimate} \
                 --output_file ${outfile}

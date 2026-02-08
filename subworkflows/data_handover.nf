@@ -1,9 +1,8 @@
-include { GATHER_DATA;  SPLIT_DATA_BY_STUDY} from "$projectDir/modules/local/gather_data/main"
-include { ENCRYPT_DIR; ENCRYPT_TARGET } from "$projectDir/modules/local/encrypt/encrypt"
+include { GATHER_DATA} from "$projectDir/modules/local/gather_data/main"
 include { TRANSFER;SUMMARY_STATISTICS_PLOTS } from "$projectDir/modules/local/summary_statistics_plots/main"
 include { SUBSET_BAM_PER_BARCODES } from "$projectDir/modules/local/subset_bam_per_barcodes_and_variants/main"
 
-workflow data_handover{
+workflow DATA_HANDOVER{
     take:
         outdir
         input_channel

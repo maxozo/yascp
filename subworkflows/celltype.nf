@@ -1,5 +1,5 @@
 
-include { AZIMUTH; REMAP_AZIMUTH; AZIMUTH_ATAC } from "$projectDir/modules/local/azimuth/main"
+include { AZIMUTH; AZIMUTH_ATAC } from "$projectDir/modules/local/azimuth/main"
 include { CELLTYPIST } from "$projectDir/modules/local/celltypist/main"
 include { SPLIT_BATCH_H5AD } from "$projectDir/modules/local/split_batch_h5ad/main"
 include { KERAS_CELLTYPE } from "$projectDir/modules/local/keras_celltype/main"
@@ -70,7 +70,7 @@ process CELLTYPE_FILE_MERGE{
 }
 
 
-workflow celltype{
+workflow CELLTYPE{
     
     take:
         file__anndata_merged

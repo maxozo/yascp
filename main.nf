@@ -9,11 +9,11 @@
 
 nextflow.enable.dsl = 2
 include { YASCP } from "$projectDir/workflows/yascp"
-include { RETRIEVE_RECOURSES; RETRIEVE_RECOURSES_TEST_DATASET } from "$projectDir/modules/local/retrieve_recourses/retrieve_recourses"
+include { RETRIEVE_RECOURSES; RETRIEVE_RECOURSES_TEST_DATASET } from "$projectDir/modules/local/retrieve_resources/retrieve_resources"
 include { RSYNC_RESULTS_REMOVE_WORK_DIR} from "$projectDir/modules/local/rsync_results_remove_work_dir/main"
-include { celltype} from "$projectDir/subworkflows/celltype"
-include { qc_and_integration } from "$projectDir/subworkflows/qc_and_integration"
-include { dummy_filtered_channel } from "$projectDir/modules/local/merge_samples/functions"
+include { CELLTYPE} from "$projectDir/subworkflows/celltype"
+include { QC_AND_INTEGRATION } from "$projectDir/subworkflows/qc_and_integration"
+include { DUMMY_FILTERED_CHANNEL } from "$projectDir/modules/local/merge_samples/functions"
 include { MATCH_GT_VIREO } from "$projectDir/modules/local/genotypes/main"
 include { MULTIPLET } from "$projectDir/subworkflows/doublet_detection"
 include { ENHANCE_STATS_GT_MATCH } from "$projectDir/modules/local/genotypes/main"
@@ -64,7 +64,7 @@ workflow {
 
 workflow JUST_CELLTYPES{
     file__anndata_merged = Channel.from(params.file__anndata_merged)
-    celltype(file__anndata_merged,'celltype_mode')
+    CELLTYPE(file__anndata_merged,'celltype_mode')
 }
 
 workflow JUST_CELLBENDER{
@@ -99,9 +99,9 @@ workflow JUST_RECLUSTER{
     file__anndata_merged = Channel.from(params.file__anndata_merged)
     gt_outlier_input = Channel.from("$projectDir/assets/fake_file.fq")
     file__anndata_merged.subscribe { println "file__anndata_merged: $it" }
-    dummy_filtered_channel(file__anndata_merged,params.id_in)
-    file__cells_filtered = dummy_filtered_channel.out.anndata_metadata
-    qc_and_integration(file__anndata_merged,file__cells_filtered,gt_outlier_input) //This runs the Clusterring and qc assessments of the datasets.    
+    DUMMY_FILTERED_CHANNEL(file__anndata_merged,params.id_in)
+    file__cells_filtered = DUMMY_FILTERED_CHANNEL.out.anndata_metadata
+    QC_AND_INTEGRATION(file__anndata_merged,file__cells_filtered,gt_outlier_input) //This runs the Clusterring and qc assessments of the datasets.    
 }
 
 workflow GT_MATCH{

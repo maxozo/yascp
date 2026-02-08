@@ -3,191 +3,9 @@
 def random_hex(n) {
   Long.toUnsignedString(new Random().nextLong(), n).toUpperCase()
 }
-include {collect_file as collect_file1;
-        collect_file as collect_file2;
-        collect_file as collect_file3;
-        collect_file as collect_file4;
-        collect_file as collect_file5;
-        collect_file as collect_file6;
-        collect_file as collect_file7;
-        collect_file as collect_file8} from "$projectDir/modules/local/collect_file/main"
-
-
-process VACUTAINER_TO_DONOR_ID {
-  tag "${study_label}.${pool_id}"
-  label 'process_tiny'
-
-  input:
-    tuple val(pool_id), val(comma_separated_list_of_vacutainer_ids), val(study_label), path(conversion_file)
-
-  output:
-    tuple val(study_label), val(pool_id), path(file_of_donor_ids), emit: study_pool_donorfil optional true
-
-  script:
-  file_of_donor_ids = "${study_label}.${pool_id}.donor_ids.txt"
-  """
-    echo "study_label: ${study_label}"
-    echo "pool_id: ${pool_id}"
-    echo "list_of_vacutainer_ids: ${comma_separated_list_of_vacutainer_ids}"
-    echo "${file_of_donor_ids}"
-    vacutainer_to_donor_id.py ${conversion_file} ${comma_separated_list_of_vacutainer_ids} ${file_of_donor_ids}
-
-    # remove file if empty so as to emit no output and stop downstream processes here
-    rv=(\$(wc -l ${file_of_donor_ids}))
-    if [ \${rv[0]} < 1 ]; then
-      rm \${file_of_donor_ids}
-    fi
-  """
-}
-
-process FETCH_DONOR_IDS_FROM_VCF {
-  tag "${study_label}.${study_vcf}"
-
-  // return a list of donors from a VCF file
-  label 'process_tiny'
-
-  input:
-    tuple val(study_label), path(study_vcf)
-
-  output:
-    tuple val(study_label), path(vcf_donor_list_file), emit: study_vcf_donor_list
-    path "versions.yml", emit: versions
-
-  script:
-  vcf_donor_list_file = "${study_label}.vcf_donor_list.txt"
-  """
-  bcftools query -l ${study_vcf} > ${vcf_donor_list_file}
-
-  cat <<-END_VERSIONS > versions.yml
-  "${task.process}":
-      bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-  END_VERSIONS
-  """
-}
-
-process CHECK_DONORS_IN_VCF_HEADER {
-  // look up donor ids in VCF header and return a table of <donor_id>,<is_present[Y/N]>
-  tag "${pool_id}.${study_label}"
-  label 'process_tiny'
-
-  input:
-    tuple val(study_label), val(pool_id), path(txt_file_pool_donor_list), path(list_of_vcf_donors_file)
-
-  output:
-    tuple val(study_label), val(pool_id), path(tsv_table_of_checked_donor_ids), emit:study_pool_donorfil optional true
-
-  script:
-  tsv_table_of_checked_donor_ids = "${pool_id}.${study_label}.donor_ids_checked.tsv"
-  """
-  echo "study_label: ${study_label}"
-  echo "pool_id: ${pool_id}"
-  echo "txt_file_pool_donor_list: ${txt_file_pool_donor_list}"
-  echo "list_of_vcf_donors_file: ${list_of_vcf_donors_file}"
-  echo "output: ${tsv_table_of_checked_donor_ids}"
-
-  find_pooled_donor_ids_in_vcf.py ${list_of_vcf_donors_file} ${txt_file_pool_donor_list} ${tsv_table_of_checked_donor_ids}
-
-  rv=(\$(wc -l ${tsv_table_of_checked_donor_ids}))
-  if [ \${rv[0]} < 1 ]; then
-    rm \${tsv_table_of_checked_donor_ids}
-  fi
-  """
-}
-
-process SELECT_DONOR_GENOTYPES_FROM_VCF {
-  label 'process_tiny'
-  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "${params.yascp_container}"
-  } else {
-      container "${params.yascp_container_docker}"
-  }
-
-  input:
-    tuple val(study_label), val(pool_id), path(donor_table), path(study_vcf), path(study_vcf_index)
-
-  output:
-    tuple val(study_label), val(pool_id), path(pool_study_bcfgz), emit: study_pool_bcfgz
-    path "versions.yml", emit: versions
-
-  script:
-  pool_study_bcfgz = "${pool_id}.${study_vcf}.bcf.gz"
-  """
-    awk 'NR>1 && \$2 !~/^N\$/ {print \$1}' ${donor_table} > donors.lst
-    bcftools view -S donors.lst -Ob -o ${pool_study_bcfgz} ${study_vcf}
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-    END_VERSIONS
-  """
-}
-
-process CONCAT_STUDY_VCFS {
-  label 'process_small'
-
-  if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-      container "${params.yascp_container}"
-  } else {
-      container "${params.yascp_container_docker}"
-  }
-
-  input:
-    val(study_label), tuple val(pool_id), path( study_vcf_files )
-
-  output:
-    tuple val(study_label), val(pool_id), path(pool_study_bcfgz), emit: study_pool_bcfgz
-    path "versions.yml", emit: versions
-
-  script:
-  pool_study_bcfgz = "${pool_id}.${study_label}.bcf.gz"
-  """
-    cat "${study_vcf_files}" > ./fofn_vcfs.txt
-    bcftools concat --threads ${task.threads} -f ./fofn_vcfs.txt -Ob -o ${pool_study_bcfgz}
-
-    cat <<-END_VERSIONS > versions.yml
-    "${task.process}":
-        bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-    END_VERSIONS
-  """
-}
+include {COLLECT_FILE} from "$projectDir/modules/local/collect_file/main"
 
 process SUBSET_GENOTYPE {
-    tag "${samplename}.${sample_subset_file}"
-    label 'process_medium'
-    publishDir "${params.outdir}/preprocessing/subset_genotypes/", mode: "${params.copy_mode}", pattern: "${samplename}.${sample_subset_file}.subset.vcf.gz"
-
-
-    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.yascp_container}"
-    } else {
-        container "${params.yascp_container_docker}"
-    }
-
-    input:
-    tuple val(samplename), path(donor_vcf),path(donor_vcf_csi), val(sample_subset_file)
-
-
-    output:
-    tuple val(samplename), path("${samplename}.subset.vcf.gz"),path("${samplename}.subset.vcf.gz.csi"), emit: samplename_subsetvcf
-    path "versions.yml", emit: versions
-    
-    script:
-    """
-        echo ${sample_subset_file}
-        #tabix -p vcf ${donor_vcf} || echo 'not typical VCF'
-        bcftools view ${donor_vcf} -s ${sample_subset_file} -Oz -o ${samplename}.subset.vcf.gz
-        bcftools index ${samplename}.subset.vcf.gz
-        rm ${donor_vcf}.tbi || echo 'not typical VCF'
-
-        cat <<-END_VERSIONS > versions.yml
-        "${task.process}":
-            bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
-        END_VERSIONS
-    """
-}
-
-
-process SUBSET_GENOTYPE2 {
     tag "${cohort}___${samplename}"
     label 'process_low'
 
@@ -416,9 +234,9 @@ workflow SUBSET_WORKF{
         }
 
         // combined_pool_subset.subscribe {println "combined_pool_subset:= ${it}\n"}
-        SUBSET_GENOTYPE2(combined_pool_subset,g_p_map)
-        ch_versions = ch_versions.mix(SUBSET_GENOTYPE2.out.versions)
-        SUBSET_GENOTYPE2.out.subset_vcf_file.unique().groupTuple().set{chromosome_vcfs_per_studypool}
+        SUBSET_GENOTYPE(combined_pool_subset,g_p_map)
+        ch_versions = ch_versions.mix(SUBSET_GENOTYPE.out.versions)
+        SUBSET_GENOTYPE.out.subset_vcf_file.unique().groupTuple().set{chromosome_vcfs_per_studypool}
 
       }
 
@@ -439,7 +257,7 @@ workflow SUBSET_WORKF{
       pools_panels = RESOLVE_POOL_VCFS.out.pipeline_data
 
       if (mode=='AllExpectedGT'){
-        collect_file1(RESOLVE_POOL_VCFS.out.user_data.collect(),"Genotypes_all_pools.tsv",params.outdir+'/preprocessing/subset_genotypes',1,'')
+        COLLECT_FILE(RESOLVE_POOL_VCFS.out.user_data.collect(),"Genotypes_all_pools.tsv",params.outdir+'/preprocessing/subset_genotypes',1,'')
       }
       pools_panels.splitCsv(header: true, sep: '\t').map { row -> tuple(row['Pool_id'], file(row.vcf), file(row.vcf_csi)) }
                 .set{merged_expected_genotypes}

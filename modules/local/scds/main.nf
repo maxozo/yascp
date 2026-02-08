@@ -37,13 +37,13 @@ process SCDS {
             cat <<-END_VERSIONS > versions.yml
             "${task.process}":
                 r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
-                scds: \$(Rscript -e "cat(as.character(packageVersion('scds')))")
-                argparse: \$(Rscript -e "cat(as.character(packageVersion('argparse')))")
-                tidyr: \$(Rscript -e "cat(as.character(packageVersion('tidyr')))")
-                dplyr: \$(Rscript -e "cat(as.character(packageVersion('dplyr')))")
-                tidyverse: \$(Rscript -e "cat(as.character(packageVersion('tidyverse')))")
-                Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
-                SingleCellExperiment: \$(Rscript -e "cat(as.character(packageVersion('SingleCellExperiment')))")
+                r library argparse: \$(Rscript -e "cat(as.character(packageVersion('argparse')))")
+                r library dplyr: \$(Rscript -e "cat(as.character(packageVersion('dplyr')))")
+                r library scds: \$(Rscript -e "cat(as.character(packageVersion('scds')))")
+                r library Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
+                r library SingleCellExperiment: \$(Rscript -e "cat(as.character(packageVersion('SingleCellExperiment')))")
+                r library tidyr: \$(Rscript -e "cat(as.character(packageVersion('tidyr')))")
+                r library tidyverse: \$(Rscript -e "cat(as.character(packageVersion('tidyverse')))")
             END_VERSIONS
         """
 }

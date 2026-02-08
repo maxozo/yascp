@@ -1,6 +1,6 @@
 #!/usr/bin/env nextflow
 
-process sccaf_assess_clustering {
+process SCCAF_ASSESS_CLUSTERING {
   
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -47,16 +47,16 @@ process sccaf_assess_clustering {
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         python: \$(python --version | sed 's/Python //g')
-        SCCAF: \$(python -c "import SCCAF; print(SCCAF.__version__)")
-        scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
-        argparse: \$(python -c "import argparse; print(argparse.__version__)")
-        pandas: \$(python -c "import pandas; print(pandas.__version__)")
-        matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+        python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+        python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+        python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+        python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+        python library SCCAF: \$(python -c "import SCCAF; print(SCCAF.__version__)")
     END_VERSIONS
     """
 }
 
-process sccaf_optimize_clustering {
+process SCCAF_OPTIMIZE_CLUSTERING {
 
 
     label 'process_medium'
@@ -108,11 +108,11 @@ process sccaf_optimize_clustering {
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             python: \$(python --version | sed 's/Python //g')
-            SCCAF: \$(python -c "import SCCAF; print(SCCAF.__version__)")
-            scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
-            argparse: \$(python -c "import argparse; print(argparse.__version__)")
-            pandas: \$(python -c "import pandas; print(pandas.__version__)")
-            matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+            python library SCCAF: \$(python -c "import SCCAF; print(SCCAF.__version__)")
         END_VERSIONS
     """
 }

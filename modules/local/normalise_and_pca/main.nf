@@ -150,7 +150,7 @@ process NORMALISE_AND_PCA {
 
         """
         rm -fr plots
-        0035-scanpy_normalize_pca.py \
+        scanpy_normalize_pca.py \
             --h5_anndata ${file__anndata} \
             --overwrite_x_with_layer ${layer} \
             --output_file adata \

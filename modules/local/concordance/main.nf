@@ -45,33 +45,6 @@ process CONCORDANCE_CALCLULATIONS {
         """
 }
 
-process OTHER_DONOR_CONCORDANCE_CALCLULATIONS {
-
-    tag "${pool_id}"
-    label 'process_medium'
-    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.yascp_container}"
-    } else {
-       container "${params.yascp_container_docker}"
-    }
-
-    publishDir  path: "${params.outdir}/deconvolution/concordances/${pool_id}",
-                mode: "${params.copy_mode}",
-                overwrite: "true"
-
-    input:
-        // path(donor_table),path(cell_assignments),path(set2_informative_sites), path(set1_uninformative_sites),path(variants_description))
-        tuple val(pool_id), path(cell_vcf), path(donor_table), path(sub_GT_Matched),path(cell_assignments),path(pkl)
-    output:
-        tuple val(pool_id), path('discordant_sites_in_other_donors.tsv'), emit: read_concordances
-    script:
-
-        """
-            find_discordant_sites_in_other_donors_find_best_donor_concordances.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors.tsv --debug
-        """
-}
-
-
 process COMBINE_FILES{
 
     tag "${pool_id}"

@@ -80,7 +80,7 @@ process OUTLIER_FILTER {
         """
             echo "publish_directory: ${outdir}"
             rm -fr plots
-            0026-filter_outlier_cells.py \
+            filter_outlier_cells.py \
                 --h5_anndata ${file__anndata} \
                 --cell_filtered_per_experiment_file ${file__cells_filtered} \
                 --outliers_fraction 0 \

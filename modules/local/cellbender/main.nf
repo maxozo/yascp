@@ -1,10 +1,9 @@
 // Modules to include.
 include {
-    cellbender__rb__get_input_cells;
-    cellbender__remove_background;
-    cellbender__remove_background__qc_plots;
-    cellbender__remove_background__qc_plots_2;
-    cellbender__gather_qc_input;cellbender__preprocess_output;
+    CELLBENDER__RB__GET_INPUT_CELLS;
+    CELLBENDER__REMOVE_BACKGROUND;
+    CELLBENDER__REMOVE_BACKGROUND__QC_PLOTS;
+    CELLBENDER__PREPROCESS_OUTPUT;
 } from "./functions.nf"
 
 // Set default parameters.
@@ -55,7 +54,7 @@ workflow CELLBENDER {
         ncells_cellranger_pre.subscribe { println "ncells_cellranger_pre: $it" }
         // ncells_cellranger.subscribe { println "ncells_cellranger: $it" }
 
-        cellbender__rb__get_input_cells(
+        CELLBENDER__RB__GET_INPUT_CELLS(
             outdir,
             channel__file_paths_10x_with_ncells,
             params.cellbender_rb.estimate_params_umis.value,
@@ -82,9 +81,10 @@ workflow CELLBENDER {
         )}.set{channel__f}
 
         // Now we figure out the ones that are not covered by the individual definitions but are in the input panels needed to process
-        // cellbender__rb__get_input_cells.out.cb_input.subscribe { println "cellbender__rb__get_input_cells: $it" }
+        // CELLBENDER__RB__GET_INPUT_CELLS.out.cb_input.subscribe { println "CELLBENDER__RB__GET_INPUT_CELLS: $it" }
 
-        cellbender__rb__get_input_cells.out.cb_input.join(channel__f, by: [0], remainder: true).set{post_ch_experimentid_paths10x_filtered}
+        CELLBENDER__RB__GET_INPUT_CELLS.out.cb_input.join(channel__f, by: [0], remainder: true).set{post_ch_experimentid_paths10x_filtered}
+        // post_ch_experimentid_paths10x_filtered.subscribe { println "post_ch_experimentid_paths10x_filtered: $it" }
         post_ch_experimentid_paths10x_filtered.filter{ it[8] == null }.map{row -> tuple(row[0])}.set{not_defined}
 
         not_defined.map{row -> tuple(
@@ -98,7 +98,7 @@ workflow CELLBENDER {
         
         channel__combo =channel__g.concat(channel__f)
 
-        cellbender__rb__get_input_cells.out.cb_input.join(channel__combo, by: [0], remainder: false).set{cellbender_ambient_rna_input}
+        CELLBENDER__RB__GET_INPUT_CELLS.out.cb_input.join(channel__combo, by: [0], remainder: false).set{cellbender_ambient_rna_input}
         
         filteredChan = cellbender_ambient_rna_input
         .filter { tuple ->
@@ -106,21 +106,21 @@ workflow CELLBENDER {
         }
 
 
-        cellbender__remove_background(
+        CELLBENDER__REMOVE_BACKGROUND(
             outdir,
             filteredChan,
             params.cellbender_rb.fpr.value
         )
-        ch_versions = ch_versions.mix(cellbender__remove_background.out.versions)
+        ch_versions = ch_versions.mix(CELLBENDER__REMOVE_BACKGROUND.out.versions)
 
-        cellbender__preprocess_output(
-            cellbender__remove_background.out.cleanup_input,
-            cellbender__remove_background.out.cb_plot_input,
-            cellbender__remove_background.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude,
+        CELLBENDER__PREPROCESS_OUTPUT(
+            CELLBENDER__REMOVE_BACKGROUND.out.cleanup_input,
+            CELLBENDER__REMOVE_BACKGROUND.out.cb_plot_input,
+            CELLBENDER__REMOVE_BACKGROUND.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude,
         )
 
 
-        cellbender__preprocess_output.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude
+        CELLBENDER__PREPROCESS_OUTPUT.out.experimentid_outdir_cellbenderunfiltered_expectedcells_totaldropletsinclude
             .combine(ch_experimentid_paths10x_raw, by: 0)
             .combine(ch_experimentid_paths10x_filtered, by: 0)
             .combine(Channel.from("${params.cellbender_rb.fpr.value}"
@@ -129,14 +129,14 @@ workflow CELLBENDER {
                     .split()))
             .set{input_channel_qc_plots_2}
             
-            cellbender__remove_background__qc_plots_2(input_channel_qc_plots_2,outdir)
+            CELLBENDER__REMOVE_BACKGROUND__QC_PLOTS(input_channel_qc_plots_2,outdir)
             
 
-        results_list = cellbender__preprocess_output.out.out_paths
+        results_list = CELLBENDER__PREPROCESS_OUTPUT.out.out_paths
         // prepeare the output channel for utilising in the deconvolution instead of barcode input.
-        cellbender_path = cellbender__preprocess_output.out.alternative_input
-        cellbender_path_raw = cellbender__preprocess_output.out.alternative_input_raw
-        cellbender_downstream = cellbender__remove_background.out.cb_to_use_downstream
+        cellbender_path = CELLBENDER__PREPROCESS_OUTPUT.out.alternative_input
+        cellbender_path_raw = CELLBENDER__PREPROCESS_OUTPUT.out.alternative_input_raw
+        cellbender_downstream = CELLBENDER__REMOVE_BACKGROUND.out.cb_to_use_downstream
         emit:
             // results_list //results list is not needed to be emited - if done it will wait for all the cellbender stuff to finish.
             cellbender_path

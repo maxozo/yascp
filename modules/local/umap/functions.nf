@@ -8,7 +8,7 @@ if (binding.hasVariable("echo_mode") == false) {
     echo_mode = true
 }
 
-process umap_calculate {
+process UMAP_CALCULATE {
     // UMAP from reduced_dims.
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -78,7 +78,7 @@ process umap_calculate {
         //--calculate_densities \
 }
 
-process generate_final_UMAPS{
+process GENERATE_FINAL_UMAPS{
 
     label 'process_medium'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -110,7 +110,7 @@ process generate_final_UMAPS{
 
 }
 
-process umap_gather {
+process UMAP_GATHER {
     // Merge UMAP from reduced_dims (reduce or gather).
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -168,7 +168,7 @@ process umap_gather {
 }
 
 
-process umap_plot_swarm {
+process UMAP_PLOT_SWARM {
     // Plot UMAPs.
     // ------------------------------------------------------------------------
     //cache false        // cache results from run
@@ -218,7 +218,7 @@ process umap_plot_swarm {
 }
 
 
-process umap_calculate_and_plot {
+process UMAP_CALCULATE_AND_PLOT {
     // UMAP from reduced_dims.
     // ------------------------------------------------------------------------
     //tag { output_dir }

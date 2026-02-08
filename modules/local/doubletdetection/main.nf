@@ -37,13 +37,13 @@ process DOUBLET_DETECTION {
             cat <<-END_VERSIONS > versions.yml
             "${task.process}":
                 python: \$(python --version | sed 's/Python //g')
-                doubletdetection: \$(python -c "import doubletdetection; print(doubletdetection.__version__)")
-                scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
-                numpy: \$(python -c "import numpy; print(numpy.__version__)")
-                tarfile: \$(python -c "import tarfile; print(tarfile.__version__)")
-                matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
-                argparse: \$(python -c "import argparse; print(argparse.__version__)")
-                pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library doubletdetection: \$(python -c "import doubletdetection; print(doubletdetection.__version__)")
+                python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+                python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+                python library tarfile: \$(python -c "import tarfile; print(tarfile.__version__)")
             END_VERSIONS
         """
 }

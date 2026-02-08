@@ -1,19 +1,19 @@
 nextflow.enable.dsl=2
 
-include {prep_collectmetadata; merge_metadata} from "$projectDir/modules/local/merge_metadata/main"
+include {PREP_COLLECTMETADATA; MERGE_METADATA} from "$projectDir/modules/local/merge_metadata/main"
 include { YASCP_INPUTS } from "$projectDir/modules/local/prepere_yascp_inputs/main"
 
 workflow DECONV_INPUTS{
     // This is a function that prpeares the inputs for deconvolution that is utilised twice.
     take:
         cellbender_path
-        prepare_inputs
+        PREPARE_INPUTS
     main:
         cellbender_path
             .map{row->tuple(row[0], file("${row[1]}".replaceFirst(/.*results/,"${params.outdir}")))}
             .set{ch_experiment_filth5} // this channel is used for task 'split_donor_h5ad'
             
-        prepare_inputs.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
+        PREPARE_INPUTS.out.ch_experiment_bam_bai_barcodes.map { experiment, bam, bai, barcodes -> tuple(experiment,
                             bam,
                             bai)}.set{pre_ch_experiment_bam_bai_barcodes}
 
@@ -35,7 +35,7 @@ workflow DECONV_INPUTS{
         channel__file_paths_10x_single
 }
 
-workflow prepare_inputs {
+workflow PREPARE_INPUTS {
 	// this workflow processes the outputs from cellbender to perform the data preparation
     take: channel_input_data_table_pre
     main:
@@ -96,8 +96,8 @@ workflow prepare_inputs {
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)
             .map{row -> tuple(row.experiment_id, file(row.data_path_10x_format+'/raw_feature_bc_matrix'),file(row.data_path_10x_format+'/filtered_feature_bc_matrix'))}
 
-        prep_collectmetadata(channel__metadata)
-        channel__metadata=merge_metadata(prep_collectmetadata.out.metadata.collect())
+        PREP_COLLECTMETADATA(channel__metadata)
+        channel__metadata=MERGE_METADATA(PREP_COLLECTMETADATA.out.metadata.collect())
 
         channel_input_data_table
             .splitCsv(header: true, sep: params.input_tables_column_delimiter)

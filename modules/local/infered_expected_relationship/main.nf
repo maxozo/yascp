@@ -1,10 +1,10 @@
 
-include { SUBSET_GENOTYPE2 } from '../subset_genotype/main'
+include { SUBSET_GENOTYPE } from '../subset_genotype/main'
 include {JOIN_CHROMOSOMES;JOIN_STUDIES_MERGE} from '../subset_genotype/main'
 include {JOIN_STUDIES_MERGE as JOIN_INFERED_EXPECTED_MERGE} from '../subset_genotype/main'
 include { GT_MATCH_POOL_IBD as GT_MATCH_INFERED_EXPECTED; ENHANCE_STATS_FILE } from '../genotypes/main'
 
-workflow Relationships_Between_Infered_Expected {
+workflow RELATIONSHIPS_BETWEEN_INFERED_EXPECTED {
     take:
       donors_in_pools
       merged_expected_genotypes

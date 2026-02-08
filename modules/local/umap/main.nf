@@ -1,8 +1,8 @@
 include {
-    umap_calculate;
-    umap_gather;
-    umap_plot_swarm;
-    umap_calculate_and_plot;generate_final_UMAPS;
+    UMAP_CALCULATE;
+    UMAP_GATHER;
+    UMAP_PLOT_SWARM;
+    UMAP_CALCULATE_AND_PLOT;GENERATE_FINAL_UMAPS;
 } from "./functions.nf"
 
 workflow UMAP {
@@ -21,7 +21,7 @@ workflow UMAP {
         colors_categorical
         method
     main:
-        umap_calculate(
+        UMAP_CALCULATE(
             outdir,
             anndata,
             metadata,
@@ -34,8 +34,8 @@ workflow UMAP {
             umap_spread,
             method
         )
-        umap_calculate.out.adata_out.collect().set{all_umaps}
-        umap_calculate.out.outdir_anndata.groupTuple()
+        UMAP_CALCULATE.out.adata_out.collect().set{all_umaps}
+        UMAP_CALCULATE.out.outdir_anndata.groupTuple()
             .reduce([:]) { map, tuple ->  // 'map' is used to collect values;
                                           // 'tuple' is the record
                 def file_id = tuple[0]    // the first item is the 'iter_id'
@@ -59,18 +59,18 @@ workflow UMAP {
         // Gather by tuple ... if we just to a collect, then will get all
         // umap_calculate calls, not split by reduced_dims. See link below:
         // http://nextflow-io.github.io/patterns/index.html#_process_outputs_into_groups
-        umap_gather(
+        UMAP_GATHER(
             umap_gather_input
         )
 
         if (params.run_celltype_assignment){
-            generate_final_UMAPS(umap_gather.out.anndata,params.outdir)
+            GENERATE_FINAL_UMAPS(UMAP_GATHER.out.anndata,params.outdir)
         }
 
         // Make plots
-        umap_plot_swarm(
-            umap_gather.out.outdir,
-            umap_gather.out.anndata,
+        UMAP_PLOT_SWARM(
+            UMAP_GATHER.out.outdir,
+            UMAP_GATHER.out.anndata,
             // cluster.out.reduced_dims,
             colors_quantitative,
             colors_categorical,
@@ -78,10 +78,10 @@ workflow UMAP {
         )
     emit:
         // Return merged input data file.
-        outdir = umap_gather.out.outdir
-        anndata = umap_gather.out.anndata
-        metadata = umap_gather.out.metadata
-        pcs = umap_gather.out.pcs
-        reduced_dims = umap_gather.out.reduced_dims
+        outdir = UMAP_GATHER.out.outdir
+        anndata = UMAP_GATHER.out.anndata
+        metadata = UMAP_GATHER.out.metadata
+        pcs = UMAP_GATHER.out.pcs
+        reduced_dims = UMAP_GATHER.out.reduced_dims
 
 }

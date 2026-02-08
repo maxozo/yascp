@@ -85,7 +85,7 @@ process HARMONY{
         param_details = "${param_details}.thetas=${theta_str}"
 
         """
-            0045-harmony_process_pcs.py \
+            harmony_process_pcs.py \
                 --pca_file ${file__pcs} \
                 --metadata_file ${file__metadata} \
                 --metadata_columns ${variables_and_thetas.variable} \
@@ -98,16 +98,16 @@ process HARMONY{
             cat <<-END_VERSIONS > versions.yml
             "${task.process}":
                 python: \$(python --version | sed 's/Python //g')
-                harmonypy: \$(python -c "import harmonypy; print(harmonypy.__version__)")
-                argparse: \$(python -c "import argparse; print(argparse.__version__)")
-                distutils: \$(python -c "import distutils; print(distutils.__version__)")
-                numpy: \$(python -c "import numpy; print(numpy.__version__)")
-                pandas: \$(python -c "import pandas; print(pandas.__version__)")
-                csv: \$(python -c "import csv; print(csv.__version__)")
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library csv: \$(python -c "import csv; print(csv.__version__)")
+                python library distutils: \$(python -c "import distutils; print(distutils.__version__)")
+                python library harmonypy: \$(python -c "import harmonypy; print(harmonypy.__version__)")
+                python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
             END_VERSIONS
         """
         // NOTE: below code for harmony in R
-        // 0045-harmony_process_pcs.R \
+        // harmony_process_pcs.R \
         //     --pca_file ${file__pcs} \
         //     --metadata_file ${file__metadata} \
         //     --metadata_columns ${variables_and_thetas.variable} \

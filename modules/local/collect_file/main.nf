@@ -1,4 +1,4 @@
-process collect_file{
+process COLLECT_FILE{
   label 'process_tiny'
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
     container "${params.yascp_container}"

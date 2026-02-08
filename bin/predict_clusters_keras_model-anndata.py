@@ -807,7 +807,7 @@ def main():
         dest='keras_model',
         required=True,
         help='Keras h5 model \
-            (output from 0057-scanpy_cluster_validate_resolution-keras.py).'
+            (output from scanpy_cluster_validate_resolution-keras.py).'
     )
 
     parser.add_argument(
@@ -816,7 +816,7 @@ def main():
         dest='keras_weights_df_file',
         required=True,
         help='Keras weights dataframe \
-            (output from 0057-scanpy_cluster_validate_resolution-keras.py).'
+            (output from scanpy_cluster_validate_resolution-keras.py).'
     )
 
     parser.add_argument(

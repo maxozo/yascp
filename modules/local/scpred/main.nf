@@ -34,12 +34,12 @@ process SCPRED{
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
-            Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
-            HierscPred: \$(Rscript -e "cat(as.character(packageVersion('HierscPred')))")
-            optparse: \$(Rscript -e "cat(as.character(packageVersion('optparse')))")
-            future.apply: \$(Rscript -e "cat(as.character(packageVersion('future.apply')))")
-            progressr: \$(Rscript -e "cat(as.character(packageVersion('progressr')))")
-            SeuratDisk: \$(Rscript -e "cat(as.character(packageVersion('SeuratDisk')))")
+            r library future.apply: \$(Rscript -e "cat(as.character(packageVersion('future.apply')))")
+            r library HierscPred: \$(Rscript -e "cat(as.character(packageVersion('HierscPred')))")
+            r library optparse: \$(Rscript -e "cat(as.character(packageVersion('optparse')))")
+            r library progressr: \$(Rscript -e "cat(as.character(packageVersion('progressr')))")
+            r library Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
+            r library SeuratDisk: \$(Rscript -e "cat(as.character(packageVersion('SeuratDisk')))")
         END_VERSIONS
         """
 }

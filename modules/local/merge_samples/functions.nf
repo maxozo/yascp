@@ -4,7 +4,7 @@ def random_hex(n) {
 
 
 
-process dummy_filtered_channel{
+process DUMMY_FILTERED_CHANNEL{
     label 'process_low' 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"
@@ -29,7 +29,7 @@ process dummy_filtered_channel{
 
 
 
-process merge_samples_from_h5ad {
+process MERGE_SAMPLES_FROM_H5AD {
     // Takes a list of h5ad files and merges them into one anndata object.
     // ------------------------------------------------------------------------
     //cache true        // cache results from run
@@ -124,88 +124,7 @@ process merge_samples_from_h5ad {
         """
 }
 
-process merge_samples {
-    // Takes a list of raw 10x files and merges them into one anndata object.
-    // ------------------------------------------------------------------------
-    //cache true        // cache results from run
-    
-    tag "${samplename}"
-    
-    label 'process_high'
-    publishDir  path: "${outdir}/handover/merged_h5ad",
-                saveAs: {filename -> filename.replaceAll("-", "pre_QC_")},
-                mode: "${params.copy_mode}",
-                overwrite: "true"
-    if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
-        container "${params.yascp_container}"
-    } else {
-        container "${params.yascp_container_docker}"
-    }
-
-    input:
-        val(outdir_prev)
-        path(file_paths_10x)
-        path(file_metadata)
-        val(file_cellmetadata)
-        val(metadata_key)
-        file(file_10x_barcodes)
-        file(file_10x_features)
-        file(file_10x_matrix)
-        val(anndata_compression_opts)
-
-    // NOTE: use path here and not file see:
-    //       https://github.com/nextflow-io/nextflow/issues/1414
-    output:
-        path("adata.h5ad", emit: anndata)
-        // path(
-        //     "adata-cell_filtered_per_experiment.tsv.gz",
-        //     emit: cells_filtered
-        // )
-        path("plots/*.png") optional true
-        path("plots/*.pdf") optional true
-
-    script:
-
-        outdir = "${outdir_prev}"
-        // String filename = './parameters.yml'
-        // yaml.dump(file_params , new FileWriter(filename))
-        // Customize command for optional files.
-        cmd__params = ""
-        cmd__cellmetadata = ""
-        if (file_cellmetadata != "no_file__file_cellmetadata") {
-            cmd__cellmetadata = "--cell_metadata_file ${file_cellmetadata}"
-        }
-        files__barcodes = file_10x_barcodes.join(',')
-        files__features = file_10x_features.join(',')
-        files__matrix = file_10x_matrix.join(',')
-
-        """
-        echo "publish_directory: ${outdir}"
-        rm -fr plots
-        nf_helper__prep_tenxdata_file.py \
-            --barcodes_list ${files__barcodes} \
-            --features_list ${files__features} \
-            --matrix_list ${files__matrix} \
-            --tenxdata_file ${file_paths_10x} \
-            --output_file nf_prepped__file_paths_10x.tsv
-        scanpy_merge.py \
-            --tenxdata_file nf_prepped__file_paths_10x.tsv \
-            --sample_metadata_file ${file_metadata} \
-            --sample_metadata_columns_delete "sample_status,study,study_id" \
-            --metadata_key ${metadata_key} \
-            --number_cpu ${task.cpus} \
-            --output_file adata \
-            --anndata_compression_opts ${anndata_compression_opts} \
-            ${cmd__params} \
-            ${cmd__cellmetadata}
-        mkdir plots
-        mv *pdf plots/ 2>/dev/null || true
-        mv *png plots/ 2>/dev/null || true
-        """
-}
-
-
-process prep_merge_samples {
+process PREP_MERGE_SAMPLES {
     input:
         tuple(
             val(experiment_id),
@@ -224,7 +143,7 @@ process prep_merge_samples {
         """
 }
 
-process prep_merge_samples_from_h5ad {
+process PREP_MERGE_SAMPLES_FROM_H5AD {
     input:
         tuple(
             val(experiment_id),

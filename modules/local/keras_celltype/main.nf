@@ -36,7 +36,7 @@ process KERAS_CELLTYPE {
     
     script:
         """
-            0057-predict_clusters_keras_model-anndata.py \\
+            predict_clusters_keras_model-anndata.py \\
             --h5_anndata \"${keras_input_h5ad}\" \\
             --h5_layer \"${params.celltype_prediction.keras.h5_layer}\" \\
             --keras_model \"${keras_model}\" \\
@@ -49,16 +49,16 @@ process KERAS_CELLTYPE {
             cat <<-END_VERSIONS > versions.yml
             "${task.process}":
                 python: \$(python --version | sed 's/Python //g')
-                keras: \$(python -c "import keras; print(keras.__version__)")
-                scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
-                argparse: \$(python -c "import argparse; print(argparse.__version__)")
-                warnings: \$(python -c "import warnings; print(warnings.__version__)")
-                numpy: \$(python -c "import numpy; print(numpy.__version__)")
-                scipy: \$(python -c "import scipy; print(scipy.__version__)")
-                pandas: \$(python -c "import pandas; print(pandas.__version__)")
-                sklearn: \$(python -c "import sklearn; print(sklearn.__version__)")
-                plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
-                matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+                python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+                python library keras: \$(python -c "import keras; print(keras.__version__)")
+                python library matplotlib: \$(python -c "import matplotlib; print(matplotlib.__version__)")
+                python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+                python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+                python library plotnine: \$(python -c "import plotnine; print(plotnine.__version__)")
+                python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
+                python library scipy: \$(python -c "import scipy; print(scipy.__version__)")
+                python library sklearn: \$(python -c "import sklearn; print(sklearn.__version__)")
+                python library warnings: \$(python -c "import warnings; print(warnings.__version__)")
             END_VERSIONS
         """
 }

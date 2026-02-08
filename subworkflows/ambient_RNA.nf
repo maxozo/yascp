@@ -1,11 +1,11 @@
 
 // Load base.config by default for all pipelines - typically included in the nextflow config.
 include { CELLBENDER } from '../modules/local/cellbender/main'
-include { SPLIT_CITESEQ_GEX; DSB } from '../modules/local/citeseq/main'
+include { SPLIT_CITESEQ_GEX } from '../modules/local/citeseq/main'
 
-include {capture_cellbender_files} from "$projectDir/modules/local/cellbender/functions"
+include {CAPTURE_CELLBENDER_FILES} from "$projectDir/modules/local/cellbender/functions"
 
-workflow ambient_RNA {
+workflow AMBIENT_RNA {
     take:
         ch_experimentid_paths10x_raw
 		ch_experimentid_paths10x_filtered
@@ -20,17 +20,17 @@ workflow ambient_RNA {
         // NEEDED SINCE CELLBENDER IS A LONG PROCESS AND QUITE OFTEN THIS IS REDUNDANT IF 50/100 SAMPLES HAVE ALREADY PERFORMED THIS PROCESS.
         // Capture previously processed CellBender outputs and raw input paths that were already used
 
-        capture_cellbender_files(params.cellbender_location,"${params.outdir}/preprocessing",params.input_data_table)
+        CAPTURE_CELLBENDER_FILES(params.cellbender_location,"${params.outdir}/preprocessing",params.input_data_table)
         
-        capture_cellbender_files.out.alt_input_unfiltered.flatten()
+        CAPTURE_CELLBENDER_FILES.out.alt_input_unfiltered.flatten()
             .map{ sample -> tuple("${sample}".replaceFirst(/.*\/captured\/unfiltered\//,"").replaceFirst(/\/.*/,""), sample) }
             .set{ ch_previously_processed_raw_inputs }
         
-        capture_cellbender_files.out.alt_input_filtered.flatten()
+        CAPTURE_CELLBENDER_FILES.out.alt_input_filtered.flatten()
             .map{ sample -> tuple("${sample}".replaceFirst(/.*\/captured\/filtered\//,"").replaceFirst(/\/.*/,""), sample) }
             .set{ ch_previously_filtered_outputs }
 
-        // capture_cellbender_files.out.cb_to_use_downstream.flatten()
+        // CAPTURE_CELLBENDER_FILES.out.cb_to_use_downstream.flatten()
         //     .map{ sample -> tuple("${sample}".replaceFirst(/.*\/cellbender\//,"").replaceFirst(/\/.*/,""), sample) }
         //     .set{ ch_previously_filtered_outputs }
 

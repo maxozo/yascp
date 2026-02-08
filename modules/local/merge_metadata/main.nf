@@ -1,4 +1,4 @@
-process prep_collectmetadata{
+process PREP_COLLECTMETADATA{
     label 'process_tiny'
 
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
@@ -17,7 +17,7 @@ process prep_collectmetadata{
         """
 }
 
-process merge_metadata{
+process MERGE_METADATA{
     label 'process_tiny'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "${params.yascp_container}"

@@ -54,9 +54,9 @@ process FREEBAYES {
 
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
-            freebayes: \$(echo \$(freebayes --version 2>&1) | sed 's/version:\s*v//g' )
             bcftools: \$(bcftools --version 2>&1 | head -n1 | sed 's/^.*bcftools //; s/ .*\$//')
             bgzip: \$(echo \$(bgzip -h 2>&1) | head -n 1 | sed 's/^Version: //; s/Usage:.*//')
+            freebayes: \$(echo \$(freebayes --version 2>&1) | sed 's/version:\s*v//g' )
         END_VERSIONS
         """
 

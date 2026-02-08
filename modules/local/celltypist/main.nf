@@ -49,14 +49,14 @@ process CELLTYPIST {
         cat <<-END_VERSIONS > versions.yml
         "${task.process}":
             python: \$(python --version | sed 's/Python //g')
-            celltypist: \$(python -c "import celltypist; print(celltypist.__version__)")
-            scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
-            logging: \$(python -c "import logging; print(logging.__version__)")
-            click: \$(python -c "import click; print(click.__version__)")
-            argparse: \$(python -c "import argparse; print(argparse.__version__)")
-            csv: \$(python -c "import csv; print(csv.__version__)")
-            numpy: \$(python -c "import numpy; print(numpy.__version__)")
-            pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library argparse: \$(python -c "import argparse; print(argparse.__version__)")
+            python library celltypist: \$(python -c "import celltypist; print(celltypist.__version__)")
+            python library click: \$(python -c "import click; print(click.__version__)")
+            python library csv: \$(python -c "import csv; print(csv.__version__)")
+            python library logging: \$(python -c "import logging; print(logging.__version__)")
+            python library numpy: \$(python -c "import numpy; print(numpy.__version__)")
+            python library pandas: \$(python -c "import pandas; print(pandas.__version__)")
+            python library scanpy: \$(python -c "import scanpy; print(scanpy.__version__)")
         END_VERSIONS
       """
 }

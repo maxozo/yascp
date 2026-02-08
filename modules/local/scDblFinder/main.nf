@@ -50,11 +50,11 @@ process SC_DBLFINDER {
             cat <<-END_VERSIONS > versions.yml
             "${task.process}":
                 r-base: \$(R --version | sed -n '1p' | sed 's/R version //; s/ (.*//')
-                scDblFinder: \$(Rscript -e "cat(as.character(packageVersion('scDblFinder')))")
-                argparse: \$(Rscript -e "cat(as.character(packageVersion('argparse')))")
-                Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
-                SingleCellExperiment: \$(Rscript -e "cat(as.character(packageVersion('SingleCellExperiment')))")
-                tidyverse: \$(Rscript -e "cat(as.character(packageVersion('tidyverse')))")
+                r library argparse: \$(Rscript -e "cat(as.character(packageVersion('argparse')))")
+                r library scDblFinder: \$(Rscript -e "cat(as.character(packageVersion('scDblFinder')))")
+                r library Seurat: \$(Rscript -e "cat(as.character(packageVersion('Seurat')))")
+                r library SingleCellExperiment: \$(Rscript -e "cat(as.character(packageVersion('SingleCellExperiment')))")
+                r library tidyverse: \$(Rscript -e "cat(as.character(packageVersion('tidyverse')))")
             END_VERSIONS
         """
 }

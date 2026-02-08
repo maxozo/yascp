@@ -1,4 +1,4 @@
-include { merge_samples_from_h5ad; merge_samples;prep_merge_samples;prep_merge_samples_from_h5ad } from './functions'
+include { MERGE_SAMPLES_FROM_H5AD;PREP_MERGE_SAMPLES;PREP_MERGE_SAMPLES_FROM_H5AD } from './functions'
 
 params.file_cellmetadata    = "no_file__file_cellmetadata"
 params.metadata_key_column = [
@@ -50,17 +50,17 @@ workflow MERGE_SAMPLES{
             log.info """---Using h5ad input file outputs from deconvolution---"""
             channel__file_paths_10x.splitCsv(header: true, sep: "\t", by: 1)
                 .map{row -> tuple(row.experiment_id, file(row.h5ad_filepath))}.set{channel__file_paths_10x_paths}
-            prep_merge_samples_from_h5ad(channel__file_paths_10x_paths)
-            input_merge =  prep_merge_samples_from_h5ad.out.h5ad.collect()
+            PREP_MERGE_SAMPLES_FROM_H5AD(channel__file_paths_10x_paths)
+            input_merge =  PREP_MERGE_SAMPLES_FROM_H5AD.out.h5ad.collect()
 
         }else if (mode == 'barcodes'){
             log.info """---Using barcode input---"""
-            prep_merge_samples(channel__file_paths_10x)
-            input_merge = prep_merge_samples.out.mtx.collect()
+            PREP_MERGE_SAMPLES(channel__file_paths_10x)
+            input_merge = PREP_MERGE_SAMPLES.out.mtx.collect()
 
         }
         
-        merge_samples_from_h5ad(
+        MERGE_SAMPLES_FROM_H5AD(
                 file_metadata,
                 params.file_cellmetadata,
                 params.metadata_key_column.value,
@@ -70,7 +70,7 @@ workflow MERGE_SAMPLES{
                 doublet_labels
         )
         
-        file__anndata_merged = merge_samples_from_h5ad.out.anndata
+        file__anndata_merged = MERGE_SAMPLES_FROM_H5AD.out.anndata
 
     emit:
         file__anndata_merged

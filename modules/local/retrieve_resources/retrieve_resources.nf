@@ -1,6 +1,6 @@
 process RETRIEVE_RECOURSES{
   label 'process_tiny'
-  publishDir "${params.outdir}/preprocessing/recourses",  mode: "${params.copy_mode}", overwrite: true  
+  publishDir "${params.outdir}/preprocessing/resources",  mode: "${params.copy_mode}", overwrite: true  
   output:
     path("10x_reference_assembly"),emit:reference_assembly, optional: true
     path("Done.tmp"),emit:done
@@ -21,12 +21,12 @@ process RETRIEVE_RECOURSES{
 
 process RETRIEVE_RECOURSES_TEST_DATASET{
   label 'process_tiny'
-  publishDir "${params.outdir}/preprocessing/recourses",  mode: "${params.copy_mode}", overwrite: true  
+  publishDir "${params.outdir}/preprocessing/resources",  mode: "${params.copy_mode}", overwrite: true  
 
   input:
     val(outdir)
   output:
-    path("full_test_dataset"),emit:recourses, optional: true
+    path("full_test_dataset"),emit:resources, optional: true
     path("input_test_data_file.tsv"),emit:input_channel
     path("input_test_vcf_file.tsv"),emit:vcf_inputs
     path("Done.tmp"),emit:done

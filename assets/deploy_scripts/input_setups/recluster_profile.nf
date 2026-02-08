@@ -92,11 +92,11 @@ params {
 
 process {
 
-    withName: plot_distributions{
+    withName: PLOT_DISTRIBUTIONS{
         containerOptions = "--containall --cleanenv --workdir /tmp -B /tmp"
     }
 
-    withName: cellex_cluster_markers{
+    withName: CELLEX_CLUSTER_MARKERS{
         maxForks=7
         memory = 300.GB
     }
@@ -109,15 +109,15 @@ process {
         maxForks=7
         memory = 300.GB
     }
-    withName: cluster_validate_resolution_keras{
+    withName: CLUSTER_VALIDATE_RESOLUTION_KERAS{
         memory = 300.GB
     }
 
-    withName: umap_calculate_and_plot{
+    withName: UMAP_CALCULATE_AND_PLOT{
         memory = 300.GB
     }
 
-    withName: sccaf_assess_clustering{
+    withName: SCCAF_ASSESS_CLUSTERING{
         memory = 300.GB
     }
     
