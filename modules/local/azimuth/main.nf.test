@@ -1,0 +1,42 @@
+nextflow_process {
+
+    name "Test Process AZIMUTH"
+    script "modules/local/azimuth/main.nf"
+    process "AZIMUTH"
+
+    test("Should run Azimuth mapping for PBMC") {
+
+        when {
+            // Move params inside the 'when' block
+            params {
+                atac = false
+                copy_mode = "copy"
+                // If the process uses these, define them here:
+                remap_celltypes = false 
+                mapping_file = ""
+            }
+            process {
+                """
+                // 1. Ensure this points to a real file in your repo
+                input[0] = tuple("Pool1", file("${projectDir}/tests/data/Pool1__Gene_Expression")) 
+                
+                // 2. Use the projectDir variable to find the mapping file at the root
+                input[1] = file("${projectDir}/assets/azimuth/Azimuth_Mappings.txt")
+                
+                input[2] = [ 
+                    name: 'pbmc_ref', 
+                    refset: 'PBMC', 
+                    annotation_labels: 'celltype.l2' 
+                ]
+                """
+            }
+        }
+
+        then {
+            assert process.success
+            assert process.out.celltype_tables_all[0].size() == 3
+            assert path(process.out.versions[0]).exists()
+            assert snapshot(process.out.predicted_celltype_labels).match()
+        }
+    }
+}
