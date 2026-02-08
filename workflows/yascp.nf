@@ -161,6 +161,9 @@ workflow YASCP {
                 }
 
                 // GENETIC DECONVOLUTION
+                // When thepreprocessing with cellbender or cellranger is finalised then we can do the deconvolution of samples. This can also be skipped if the samples are not multiplexed.
+                // However if the number of individuals is specified as 1 the deconvolution will be skipped anyways, but we will apply scrubblet to remove dublicates.
+
                 if (params.do_deconvolution) {
                     log.info '--- Performing Deconvolution ---'
                     MAIN_DECONVOLUTION(
