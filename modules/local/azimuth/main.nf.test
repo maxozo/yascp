@@ -17,8 +17,12 @@ nextflow_process {
             }
             process {
                 """
-                input[0] = tuple("test_sample", file("tests/data/pbmc_tiny.h5ad"))
-                input[1] = file("tests/data/mapping_v3.csv")
+                // 1. Ensure this points to a real file in your repo
+                input[0] = tuple("Pool1", file("${projectDir}/tests/data/Pool1__Gene_Expression")) 
+                
+                // 2. Use the projectDir variable to find the mapping file at the root
+                input[1] = file("${projectDir}/assets/azimuth/Azimuth_Mappings.txt")
+                
                 input[2] = [ 
                     name: 'pbmc_ref', 
                     refset: 'PBMC', 
